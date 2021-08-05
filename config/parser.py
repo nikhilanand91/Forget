@@ -1,4 +1,3 @@
-import configparser
 from dataclasses import dataclass
 
 @dataclass
@@ -20,16 +19,8 @@ class readConfig:
             elif str.split(section)[0] == "Job" and str.split(section)[1].isdigit():
                 self.jobs[section] = {}
                 options = config.options(section)
-                self.jobs[section]["model parameters"] = config.get(section, options[0])
-                self.jobs[section]["save models"] = config.get(section, options[1])
-                self.jobs[section]["num epochs"] = int(config.get(section, options[2]))
-                self.jobs[section]["dataset"] = config.get(section, options[3])
-                self.jobs[section]["measure forget"] = config.get(section, options[4])
-                self.jobs[section]["track correct examples"] = config.get(section, options[5])
-                self.jobs[section]["save forget dataset"] = config.get(section, options[6])
-                self.jobs[section]["job directory"] = config.get(section, options[7])
-                self.jobs[section]["add model noise"] = config.get(section, options[8])
-                self.jobs[section]["noise parameters"] = config.get(section, options[9])
-                self.jobs[section]["save clones"] = config.get(section, options[10])
+                #change this to a loop
+                for i in range(len(options)):
+                    self.jobs[section][str(options[i])] = config.get(section, options[i])
             else:
                 raise ValueError("Unknown section command in config file!")
