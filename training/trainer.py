@@ -45,7 +45,9 @@ class train:
         if job_info["measure forget"] == "true" or job_info["measure forget"] == "True":
             self.forget_flag = True
             self.forget_msrmt = measureForget(self.num_epochs, num_batches = self.batch_size, batch_size=self.batch_size)
-
+        else:
+            self.forget_msrmt = None
+            
         if job_info["track correct examples"] == "true" or job_info["track correct examples"] == "True":
             self.track_correct_ex = True
         
@@ -53,7 +55,6 @@ class train:
             self.store_directory = self.exp_directory + "job" + str(job_idx) + "/" + "model" + str(model_idx) + "/"
         else:
             pass #to add..
-
     
     def getTrainDataset(self, data_idx): #option to change batch size?
         if data_idx == 0:
@@ -110,14 +111,14 @@ class train:
                 self.forget_msrmt.resetClassifyBatchTracker()
 
             if (epoch+1) % self.save_every == 0:
-                self.save_model(model, epoch, torch.tensor(batch_loss).mean():.2f)
+                self.save_model(model, epoch, torch.tensor(batch_loss).mean())
                 self.save_data()
 
-        model.eval()
-        self.clean()
-
-        if self.forget_flat:
+        if self.forget_flag:
             self.forget_msrmt.resetTrainIter()
+        
+        model.eval()
+        self.clean(model)
     
     def save_model(self, model, epoch, loss):
         torch.save({
@@ -134,5 +135,8 @@ class train:
             self.forget_msrmt.saveCorrect(epoch, self.store_directory)
 
     def clean(self):
-        pass
-        #after training, clean caches,
+        del model
+        del self.forget_msrmt
+
+        #after training, clean caches,..
+
