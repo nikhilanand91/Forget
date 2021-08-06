@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import torch
+from torch import nn, optim
 
 @dataclass
 class measureForget:
@@ -7,16 +8,15 @@ class measureForget:
     num_batches: int
     batch_size: int
 
-    forgetStatistics: torch.zeros(nb_epochs, num_batches, batch_size)
-    correctStatistics: torch.zeros(nb_epochs, num_batches, batch_size)
-    a_i: torch.zeros(nb_epochs, num_batches, batch_size) #measures if correctly classified or not
-    softmaxfunc: nn.Softmax(dim=1)
-    train_batch_tracker: 0
-    classify_batch_tracker: 0
-    train_iteration: 0
-    num_ep: nb_epochs
-    num_btchs: num_batches
-    btc_size: batch_size
+    train_batch_tracker = 0
+    classify_batch_tracker = 0
+    train_iteration = 0
+    softmaxfunc = nn.Softmax(dim=1)
+    
+    def __post_init__(self):
+        self.forgetStatistics = torch.zeros(self.nb_epochs, self.num_batches, self.batch_size)
+        self.correctStatistics = torch.zeros(self.nb_epochs, self.num_batches, self.batch_size)
+        self.a_i = torch.zeros(self.nb_epochs, self.num_batches, self.batch_size) #measures if correctly classified or not
 
     #track examples check if examples in a batch were correctly classified
     #before and aren't classified correctly now (where before and now refer
@@ -44,7 +44,7 @@ class measureForget:
                 self.correctStatistics[self.train_iteration, self.classify_batch_tracker, k] = 1
     
     def resetCorrectStatistics(self):
-        self.correctStatistics = torch.zeros(self.num_ep, self.num_btchs, self.btc_size)
+        self.correctStatistics = torch.zeros(self.nb_epochs, self.num_batches, self.batch_size)
 
     def incrementTrainBatch(self):
         self.train_batch_tracker+=1
