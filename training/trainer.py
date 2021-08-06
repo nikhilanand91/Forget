@@ -115,6 +115,9 @@ class train:
 
         model.eval()
         self.clean()
+
+        if self.forget_flat:
+            self.forget_msrmt.resetTrainIter()
     
     def save_model(self, model, epoch, loss):
         torch.save({
@@ -125,10 +128,10 @@ class train:
             }, self.store_directory + "epoch=" + str(epoch+1))
         
     def save_data(self):
-        # maskpath = str(parent_dir_path) + "/" + now + "/" + now + "_mask.txt"
-        # maskfile = open(maskpath, "x")
-        # maskfile.write(f"forget_mask = {forget_mask}")
-        # maskfile.close()
+        if self.forget_flag:
+            self.forget_msrmt.saveForget(epoch, self.store_directory)
+        if self.track_correct_ex:
+            self.forget_msrmt.saveCorrect(epoch, self.store_directory)
 
     def clean(self):
         pass
