@@ -2,6 +2,7 @@ import torch
 from torch import nn, optim
 from torchvision import datasets, transforms, utils
 from torch.utils.data import random_split, DataLoader
+from pathlib import Path
 import matplotlib.pyplot as plt
 
 from measureforget import measureForget
@@ -12,9 +13,15 @@ class train:
         #idx here would be '1'
 
         #list of datasets that trainer knows about
+        parent_dir_path = Path(Path().absolute()).parent
+
         self.dataset_names = ['cifar10']
         self.num_epochs = int(job_info["num epochs"])
-        self.exp_directory = exp_info["storage directory"]
+        self.save_every = int(job_info["save every"])
+        if exp_info["storage directory"] == "default":
+            self.exp_directory = str(parent_dir_path) + exp_info["name"] + "/"
+        else:
+            self.exp_directory = exp_info["storage directory"]
 
         if job_info["model parameters"] == "default":
             self.optimizer = optim.SGD(model.parameters(), lr=1e-3, momentum=0.9)
@@ -43,7 +50,7 @@ class train:
             self.track_correct_ex = True
         
         if job_info["storage directory"] == "default":
-            self.store_directory = self.exp_directory + "/job" + str(job_idx) + "/" + "model" + str(model_idx) + "/"
+            self.store_directory = self.exp_directory + "job" + str(job_idx) + "/" + "model" + str(model_idx) + "/"
         else:
             pass #to add..
 
@@ -53,51 +60,75 @@ class train:
             train_dataset = datasets.CIFAR10('/', train=True, download=True, transform=transforms.Compose([transforms.ToTensor(), transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])]))
             return DataLoader(train_dataset, batch_size=self.batch_size, num_workers = 0)
 
-    def trainLoop(self):
+    def trainLoop(self, model):
         losses = list()
         accuracies = list()
         epochs = list()
-        model.train()
 
         for epoch in range(num_epochs):
             batch_loss = list()
             batch_acc = list()
 
-            for batch in train_set:
+            model.train()
+            for batch in self.data_loader:
                 x,y = batch
                 x=x.cuda()
                 logits = model(x)
 
                 if self.forget_flag: #eventually should change forget class to have wrapper instead of these flags.
-                    forget_msrmt.trackForgettableExamples(logits.detach(), y.detach())
+                    self.forget_msrmt.trackForgettableExamples(logits.detach(), y.detach())
 
-                J = loss(logits, y.cuda())
+                J = self.loss(logits, y.cuda())
                 model.zero_grad()
                 J.backward()
-                optimizer.step()
+                self.optimizer.step()
 
                 batch_loss.append(J.item())
                 batch_acc.append(y.eq(logits.detach().argmax(dim=1).cpu()).float().mean())
 
                 if self.forget_flag:
-                    forget_msrmt.incrementTrainBatch()
+                    self.forget_msrmt.incrementTrainBatch()
             
             if self.forget_flag:
-                forget_msrmt.resetTrainBatchTracker()
+                self.forget_msrmt.resetTrainBatchTracker()
             
             accuracies.append(torch.tensor(batch_acc).mean())
             if self.forget_flag:
-                forget_msrmt.incrementTrainIter()
-        
-        model.eval()
-    
-    def save_model(self):
-        pass
-        #model,
+                self.forget_msrmt.incrementTrainIter()
 
+            if self.track_correct_ex:
+                model.eval()
+                for batch in self.data_loader:
+                    x, y = batch
+                    x = x.cuda()
+                    with torch.no_grad():
+                        logits_prime = model(x.detach())
+        
+                    self.forget_msrmt.trackCorrectExamples(logits_prime.detach(), y.detach())
+                    self.forget_msrmt.incrementClassifyBatch()
+    
+                self.forget_msrmt.resetClassifyBatchTracker()
+
+            if (epoch+1) % self.save_every == 0:
+                self.save_model(model, epoch, torch.tensor(batch_loss).mean():.2f)
+                self.save_data()
+
+        model.eval()
+        self.clean()
+    
+    def save_model(self, model, epoch, loss):
+        torch.save({
+            'epoch': epoch+1,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'loss': loss
+            }, self.store_directory + "epoch=" + str(epoch+1))
+        
     def save_data(self):
-        pass
-        #save accuracies, epoch list
+        # maskpath = str(parent_dir_path) + "/" + now + "/" + now + "_mask.txt"
+        # maskfile = open(maskpath, "x")
+        # maskfile.write(f"forget_mask = {forget_mask}")
+        # maskfile.close()
 
     def clean(self):
         pass
