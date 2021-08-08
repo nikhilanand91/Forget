@@ -1,12 +1,15 @@
 from dataclasses import dataclass
 from pathlib import Path
+import configparser
 
 @dataclass
 class readConfig:
     config_file: str = "default_config.ini"
-    config = config.read(config_file)
-
+    
+    
     def __post_init__(self):
+        config = configparser.ConfigParser()
+        config.read(self.config_file)
         self.sections = config.sections()
         self.exp_info = {}
         self.jobs = {}
