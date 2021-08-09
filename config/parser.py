@@ -1,13 +1,16 @@
 from dataclasses import dataclass
 from pathlib import Path
 import configparser
+import sys
 
 @dataclass
 class readConfig:
     config_file: str = "default_config.ini"
     
-    
     def __post_init__(self):
+        parent_dir_path = Path(Path().absolute()).parent
+        sys.path.append(str(parent_dir_path) + 'open_lth/')
+
         config = configparser.ConfigParser()
         config.read(self.config_file)
         self.sections = config.sections()
@@ -35,6 +38,7 @@ class readConfig:
         parent_dir_path = Path(Path().absolute()).parent
 
         #make experiment path
+        print(f"Experiment info: {self.exp_info}")
         self.exp_path = str(parent_dir_path) + "/" + self.exp_info["name"]
         Path(self.exp_path).mkdir(parents=True, exist_ok=True)
 
@@ -50,3 +54,18 @@ class readConfig:
                     Path(self.model_path + "/forgetdata").mkdir(parents=True, exist_ok=True)
                 if self.jobs[job]["track correct examples"] == "true" or self.jobs[job]["track correct examples"] == "True":
                     Path(self.model_path + "/correctdata").mkdir(parents=True, exist_ok=True)
+        
+        #model params
+    def get_model(self, job):
+        from foundations import hparams
+        from models import registry
+
+        if self.jobs[job]["model parameters"] == "default":
+            _model_params = hparams.ModelHparams(
+                'cifar_resnet_20',
+                'kaiming_uniform',
+                'uniform'
+            )
+            return registry.get(_model_params).cuda()
+        else:
+            pass #to do for case of other model parameters

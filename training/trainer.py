@@ -34,29 +34,33 @@ class train:
         else:
             self.save_model = False
 
-        data_idx = [i for i in range(len(self.dataset_names)) if self.dataset_names[i]==job_info["dataset"]]
-        self.data_loader = self.getTrainDataset(data_idx)
-
+        #print(job_info["dataset params"])
         if job_info["dataset params"] == "default":
             self.batch_size = 128 #note that this also gets passed to measureForget
         else:
             pass #to add, custom dataset batch size, num workers, etc.
+        
+        data_idx = [i for i in range(len(self.dataset_names)) if self.dataset_names[i]==job_info["dataset"]][0]
+        self.data_loader = self.getTrainDataset(data_idx)
 
         if job_info["measure forget"] == "true" or job_info["measure forget"] == "True":
             self.forget_flag = True
-            self.forget_msrmt = measureForget(self.num_epochs, num_batches = self.batch_size, batch_size=self.batch_size)
+            self.forget_msrmt = measureForget(self.num_epochs, num_batches = len(self.data_loader), batch_size=self.batch_size)
         else:
             self.forget_msrmt = None
-            
+
         if job_info["track correct examples"] == "true" or job_info["track correct examples"] == "True":
             self.track_correct_ex = True
         
         if job_info["storage directory"] == "default":
-            self.store_directory = self.exp_directory + "job" + str(job_idx) + "/" + "model" + str(model_idx) + "/"
+            self.store_directory = self.exp_directory + "Job " + str(job_idx+1) + "/" + "model" + str(model_idx) + "/"
         else:
             pass #to add..
+        
+        #self.trainLoop(model) #train the model
     
     def getTrainDataset(self, data_idx): #option to change batch size?
+        print(f"Loading train dataset {self.dataset_names[data_idx]}... batch size {self.batch_size}")
         if data_idx == 0:
             train_dataset = datasets.CIFAR10('/', train=True, download=True, transform=transforms.Compose([transforms.ToTensor(), transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])]))
             return DataLoader(train_dataset, batch_size=self.batch_size, num_workers = 0)
@@ -66,7 +70,7 @@ class train:
         accuracies = list()
         epochs = list()
 
-        for epoch in range(num_epochs):
+        for epoch in range(self.num_epochs):
             batch_loss = list()
             batch_acc = list()
 
@@ -92,10 +96,6 @@ class train:
             
             if self.forget_flag:
                 self.forget_msrmt.resetTrainBatchTracker()
-            
-            accuracies.append(torch.tensor(batch_acc).mean())
-            if self.forget_flag:
-                self.forget_msrmt.incrementTrainIter()
 
             if self.track_correct_ex:
                 model.eval()
@@ -111,8 +111,12 @@ class train:
                 self.forget_msrmt.resetClassifyBatchTracker()
 
             if (epoch+1) % self.save_every == 0:
-                self.save_model(model, epoch, torch.tensor(batch_loss).mean())
+                self.save_model_data(model, epoch, torch.tensor(batch_loss).mean(), torch.tensor(batch_acc).mean()) #, torch.tensor(batch_loss).mean())
                 self.save_data()
+            
+            accuracies.append(torch.tensor(batch_acc).mean())
+            if self.forget_flag:
+                self.forget_msrmt.incrementTrainIter()
 
         if self.forget_flag:
             self.forget_msrmt.resetTrainIter()
@@ -120,23 +124,25 @@ class train:
         model.eval()
         self.clean(model)
     
-    def save_model(self, model, epoch, loss):
+    def save_model_data(self, model, epoch, loss, accuracy):
         torch.save({
-            'epoch': epoch+1,
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-            'loss': loss
-            }, self.store_directory + "epoch=" + str(epoch+1))
+           'epoch': epoch+1,
+           'model_state_dict': model.state_dict(),
+           'optimizer_state_dict': self.optimizer.state_dict(),
+           'loss': loss,
+           'train accuracy': accuracy,
+           }, self.store_directory + "epoch=" + str(epoch+1) + ".pt")
         
     def save_data(self):
         if self.forget_flag:
-            self.forget_msrmt.saveForget(epoch, self.store_directory)
+            self.forget_msrmt.saveForget(self.store_directory)
         if self.track_correct_ex:
-            self.forget_msrmt.saveCorrect(epoch, self.store_directory)
+            self.forget_msrmt.saveCorrect(self.store_directory)
 
-    def clean(self):
+        #to add: save accuracies
+
+    def clean(self, model):
         del model
         del self.forget_msrmt
 
         #after training, clean caches,..
-
