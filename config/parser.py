@@ -9,7 +9,7 @@ class readConfig:
     
     def __post_init__(self):
         parent_dir_path = Path(Path().absolute()).parent
-        sys.path.append(str(parent_dir_path) + 'open_lth/')
+        sys.path.append(str(parent_dir_path) + 'content/open_lth/') #change this
 
         config = configparser.ConfigParser()
         config.read(self.config_file)
@@ -43,17 +43,20 @@ class readConfig:
         Path(self.exp_path).mkdir(parents=True, exist_ok=True)
 
         #for each job and for each model in the job, make the corresponding directory
+    
+    def mk_directories(self, model_numbers_per_job):
         for job in self.jobs:
             self.job_path = self.exp_path + "/" + job
             Path(self.job_path).mkdir(parents=True, exist_ok=True)
-            for model_idx in range(int(self.exp_info["number of models"])):
-                self.model_path = self.job_path + "/model" + str(model_idx)
-                Path(self.model_path).mkdir(parents=True, exist_ok=True)
-            #and if track flags are on, create directories for those
-                if self.jobs[job]["measure forget"] == "true" or self.jobs[job]["measure forget"] == "True":
-                    Path(self.model_path + "/forgetdata").mkdir(parents=True, exist_ok=True)
-                if self.jobs[job]["track correct examples"] == "true" or self.jobs[job]["track correct examples"] == "True":
-                    Path(self.model_path + "/correctdata").mkdir(parents=True, exist_ok=True)
+            for numbers_per_job in model_numbers_per_job:
+                for model_idx in range(numbers_per_job):#range(int(self.exp_info["number of models"])):
+                    self.model_path = self.job_path + "/model" + str(model_idx)
+                    Path(self.model_path).mkdir(parents=True, exist_ok=True)
+                #and if track flags are on, create directories for those
+                    if self.jobs[job]["measure forget"] == "true" or self.jobs[job]["measure forget"] == "True":
+                        Path(self.model_path + "/forgetdata").mkdir(parents=True, exist_ok=True)
+                    if self.jobs[job]["track correct examples"] == "true" or self.jobs[job]["track correct examples"] == "True":
+                        Path(self.model_path + "/correctdata").mkdir(parents=True, exist_ok=True)
         
         #model params
     def get_model(self, job):
