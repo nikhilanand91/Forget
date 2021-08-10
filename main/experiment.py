@@ -3,6 +3,7 @@ from pathlib import Path
 import configparser
 import parser
 import numpy
+import trainer
 
 
 class experiment:
@@ -15,12 +16,6 @@ class experiment:
     
     def __init__(self, config_file = "default_config.ini"):
         #pretraining step:
-        #first add OpenLTH to the path
-        parent_dir_path = Path(Path().absolute()).parent
-        sys.path.append(str(parent_dir_path) + 'open_lth-master/')
-        
-        from open_lth.foundations import hparams
-        from open_lth.models import registry
 
         #get config files from parser
         self.reader = parser.readConfig(config_file)
@@ -31,12 +26,24 @@ class experiment:
 
         #number of models to train per job
         if self.num_models % self.num_jobs == 0:
-            self.num_train_per_job = numpy.full(self.num_jobs, self.num_models/self.num_jobs)
+            self.num_train_per_job = numpy.full(self.num_jobs, self.num_models/self.num_jobs).astype(int)
         else:
-            self.num_train_per_job = numpy.full(self.num_jobs - 1, int(self.num_models/self.num_jobs))
-            self.num_train_per_job = numpy.append(self.num_train_per_job, self.num_models % self.num_jobs) #check this
+            self.num_train_per_job = numpy.full(self.num_jobs - 1, int(self.num_models/self.num_jobs)).astype(int)
+            self.num_train_per_job = numpy.append(self.num_train_per_job, int(self.num_models % self.num_jobs)) #check this
 
+        #make output directories
+        self.reader.mk_directories(self.num_train_per_job)
+        
+        print(f"Division of jobs (models/job): {self.num_train_per_job}")
+        #training step:
         #and for each job, pass models onto trainer
-        for num_job in self.num_train_per_job:
-            for model_no in range(int(num_job)):
-                print(model_no)
+        job_idx = 0
+        model_idx = 0
+        for job in self.reader.jobs:
+            print(f"{job}: {self.reader.jobs[job]}")
+            for model_no in range(self.num_train_per_job[job_idx]):
+                model = self.reader.get_model(job)
+                model_trainer = trainer.train(model, self.reader.exp_info, self.reader.jobs[job], job_idx, model_idx)
+                model_trainer.trainLoop(model)
+                model_idx+=1
+            job_idx+=1
