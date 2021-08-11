@@ -5,7 +5,7 @@ from torch.utils.data import random_split, DataLoader
 from pathlib import Path
 import matplotlib.pyplot as plt
 
-from measureforget import measureForget
+from Forget.training  import measureforget
 
 class train:
     def __init__(self, model, exp_info, job_info, job_idx, model_idx): #job_idx, model_idx should be a unique modifier that indexes the job, model
@@ -45,7 +45,7 @@ class train:
 
         if job_info["measure forget"] == "true" or job_info["measure forget"] == "True":
             self.forget_flag = True
-            self.forget_msrmt = measureForget(self.num_epochs, num_batches = len(self.data_loader), batch_size=self.batch_size)
+            self.forget_msrmt = measureforget.measureForget(self.num_epochs, num_batches = len(self.data_loader), batch_size=self.batch_size)
         else:
             self.forget_msrmt = None
 

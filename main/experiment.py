@@ -1,12 +1,15 @@
 import sys
 from pathlib import Path
 import configparser
-import parser
+from Forget.config import parser
 import numpy
-import trainer
+from Forget.training import trainer
+import os
+parent_dir_path = os.path.dirname(str(os.path.dirname(os.path.realpath(__file__))))
+sys.path.append(str(parent_dir_path) + "/open_lth/")
+print(f"Appending paths: {str(parent_dir_path)}")
 
-
-class experiment:
+class run_experiment:
     """
     the experiment should call on config.py to get info and create the appropriate directories
     based on the contents of config.ini file. It should then be divided into two steps:
@@ -14,7 +17,7 @@ class experiment:
     2. Training (for each job, pass models onto trainer.py which trains it and stores the data)
     """
     
-    def __init__(self, config_file = "default_config.ini"):
+    def __init__(self, config_file = "Forget/config/default_config.ini"):
         #pretraining step:
 
         #get config files from parser
