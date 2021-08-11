@@ -49,4 +49,5 @@ class run_experiment:
                 model_trainer = trainer.train(model, self.reader.exp_info, self.reader.jobs[job], job_idx, model_idx)
                 model_trainer.trainLoop(model)
                 model_idx+=1
+            model_idx=0
             job_idx+=1
