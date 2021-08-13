@@ -29,9 +29,12 @@ class createForgetDataset:
         self.exp_name = self.reader.exp_info["name"]
         #self.num_jobs = int(self.reader.exp_info["number of jobs"])
         
+        self.list_forget_folders = []
         print(f"Reading from output files in experiment {self.exp_name}...")
         for job in self.reader.jobs: #remember to put everything into forgetdata
-            self.list_forget_folders = ["/"+self.exp_name + "/" + job + "/" + f.name + "/forgetdata/" for f in os.scandir("/" + self.exp_name + "/" + job + "/") if f.is_dir()]
+            job_subdir = ["/"+self.exp_name + "/" + job + "/" + f.name + "/forgetdata/" for f in os.scandir("/" + self.exp_name + "/" + job + "/") if f.is_dir()]
+            for dir in job_subdir:
+                self.list_forget_folders.append(dir)
             #self.list_correct_folders = [self.exp_name + "/" + job + "/" + f.name + "/correctdata/" for f in os.scandir("/" + self.exp_name + "/" + job + "/") if f.is_dir()]
             self.max_epoch = int(self.reader.jobs[job]["num epochs"])
 
@@ -75,6 +78,10 @@ class createForgetDataset:
 
             #as well as the full forgotten dataset
             self.getFullForgottenDataset(save_directory = subfolder)
+
+            print(f"Number forgotten: {self.get_num_forgotten()}")
+            print(f"Number forgotten + correct: {self.get_num_forgotten_correct()}")
+            torch.save(torch.tensor[self.get_num_forgotten(), self.get_num_forgotten_correct()], subfolder + "num_forgotten.pt")
 
 
     def getForgetMask(self, save_directory = "/", save = True):

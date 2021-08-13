@@ -1,26 +1,64 @@
 import torch
 import numpy as np
+import os
+import sys
+sys.path.append("/")
+sys.path.append("/Forget/open_lth/")
+from Forget.open_lth.foundations import hparams
+from Forget.open_lth.models import registry
+from pathlib import Path
 
 class damageModel:
-    def __init__(self, model):
-        from foundations import hparams
-        from models import registry
+    def __init__(self, config_file = "/Forget/config/default_config.ini"):
+
+        self.reader = parser.readConfig(config_file)
+        self.exp_name = self.reader.exp_info["name"]
+        #self.num_jobs = int(self.reader.exp_info["number of jobs"])
         
+        self.list_model_folders = []
+        print(f"Reading from output files in experiment {self.exp_name}...")
+        for job in self.reader.jobs: #remember to put everything into forgetdata
+            job_subdir = ["/"+self.exp_name + "/" + job + "/" + f.name for f in os.scandir("/" + self.exp_name + "/" + job + "/") if f.is_dir()]
+            for dir in job_subdir:
+                self.list_model_folders.append(dir)
+            self.max_epoch = int(self.reader.jobs[job]["num epochs"])
+
+            if self.reader.jobs[job]["model parameters"] == "default":
+                self.model_hparams = hparams.ModelHparams('cifar_resnet_20', 'kaiming_uniform', 'uniform')
+            else:
+                pass #to add in
+        
+        print(self.list_model_folders)
+
+        for folder in self.list_model_folders:
+            self.model = registry.get(self.model_hparams).cuda()
+            self.model.load_state_dict(torch.load(folder+"/epoch="+str(self.max_epoch)+".pt")['model_state_dict'])
+            self.clones = self.addNoise(self.model)
+
+            save_clone_path = folder + "/clones/"
+            Path(save_clone_path).mkdir(parents=True, exist_ok=True)
+            for idx, clone in enumerate(self.clones):
+                torch.save(clone.state_dict(), save_clone_path + str(idx) + ".pt")
+
+            del self.model
+            del self.clones
+
+        
+    def addNoise(self, model, num_points = 200, min_noise = 0., max_noise = 0.1):
+        """
+        returns an array of length num_points, consisting of models increasingly damaged
+        from Gaussian noise with stdev min_noise to max_noise
+        """
         model.eval()
         self.model_clones = []
-        self.model_state_dict = model.state_dict()
-        self.model_hparams = hparams.ModelHparams('cifar_resnet_20', 'kaiming_uniform', 'uniform')
-
-    def addNoise(self, num_points = 200, min_noise = 0., max_noise = 0.1): #returns an array of length num_points, consisting of models increasingly damaged from Gaussian noise with stdev min_noise to max_noise
-        from foundations import hparams
-        from models import registry
+        model_state_dict = model.state_dict()
 
         epsilons = np.linspace(min_noise, max_noise, num_points)
         for i in range(len(epsilons)):
             sys.stdout.write("\r{0}Cloning models...".format("|"*i))
             sys.stdout.flush()
             self.model_clones.append(registry.get(self.model_hparams).cuda())
-            self.model_clones[i].load_state_dict(self.model_state_dict)
+            self.model_clones[i].load_state_dict(model_state_dict)
             
 
         with torch.no_grad():
@@ -34,6 +72,7 @@ class damageModel:
             models.eval()
         
         return self.model_clones
+        
     
     def getEpsilons(self, num_points = 200, min_noise = 0., max_noise = 0.1):
         return np.linspace(min_noise, max_noise, num_points)

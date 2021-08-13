@@ -5,6 +5,8 @@ from Forget.config import parser
 import numpy
 from Forget.training import trainer
 import os
+from Forget.datasets import createforgetdataset
+
 parent_dir_path = os.path.dirname(str(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(str(parent_dir_path) + "/open_lth/")
 print(f"Appending paths: {str(parent_dir_path)}")
@@ -36,8 +38,12 @@ class run_experiment:
 
         #make output directories
         self.reader.mk_directories(self.num_train_per_job)
-        
+
+        """
+        TRAINING STEP
+        """
         print(f"Division of jobs (models/job): {self.num_train_per_job}")
+        print(f"Starting training...")
         #training step:
         #and for each job, pass models onto trainer
         job_idx = 0
@@ -51,3 +57,12 @@ class run_experiment:
                 model_idx+=1
             model_idx=0
             job_idx+=1
+        
+        """
+        PROCESS STEP
+        """
+        print(f"Now processing output...")
+        crtForget = createforgetdataset.createforgetdataset()
+        
+
+        
