@@ -81,7 +81,7 @@ class createForgetDataset:
 
             print(f"Number forgotten: {self.get_num_forgotten()}")
             print(f"Number forgotten + correct: {self.get_num_forgotten_correct()}")
-            torch.save(torch.tensor[self.get_num_forgotten(), self.get_num_forgotten_correct()], subfolder + "num_forgotten.pt")
+            torch.save(torch.tensor([self.get_num_forgotten(), self.get_num_forgotten_correct()]), subfolder + "num_forgotten.pt")
 
 
     def getForgetMask(self, save_directory = "/", save = True):
@@ -136,3 +136,11 @@ class createForgetDataset:
         if save:
             torch.save(self.full_forgotten_dataset,
                        save_directory + "full_forgotten_dataloader_epoch=" + str(self.max_epoch) + ".pt")
+
+from torchvision import datasets, transforms, utils
+from torch.utils.data import random_split, DataLoader
+
+def fetch_dataset(data_idx, batch_size):
+    if data_idx == 0:
+        train_dataset = datasets.CIFAR10('/', train=True, download=True, transform=transforms.Compose([transforms.ToTensor(), transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])]))
+        return DataLoader(train_dataset, batch_size, num_workers = 0)

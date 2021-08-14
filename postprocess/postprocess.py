@@ -1,17 +1,72 @@
 import torch
+import os, os.path
+import sys
+sys.path.append("/")
+sys.path.append("/Forget/open_lth/")
+from Forget.open_lth.foundations import hparams
+from Forget.open_lth.models import registry
 
 class postProcess:
-    def __init__(self, num_examples = None):
-        self.num_examples = num_examples
+    """
+    Go through clones/ and for each clone load the forget_correct dataset and classify it.
+    """
+    def __init__(self, config_file = "/Forget/config/default_config.ini"):
+        self.reader = parser.readConfig(config_file)
+        self.exp_name = self.reader.exp_info["name"]
+        #self.num_jobs = int(self.reader.exp_info["number of jobs"])
+        
+        self.list_clone_folders = []
+        self.list_model_folders = []
+        self.num_examples = []
+        self.num_forgotten_correct = []
+        self.model_counts = []
+        print(f"Reading from clones files in experiment {self.exp_name}...")
+        for job in self.reader.jobs: #remember to put everything into forgetdata
+            clone_subdir = ["/"+self.exp_name + "/" + job + "/" + f.name + "/clones/" for f in os.scandir("/" + self.exp_name + "/" + job + "/") if f.is_dir()]
+            model_subdir = ["/"+self.exp_name + "/" + job + "/" + f.name for f in os.scandir("/" + self.exp_name + "/" + job + "/") if f.is_dir()]
+            for dir in model_subdir:
+                self.num_examples.append(torch.load(dir + "/forgetdata/num_forgotten.pt")[1])
+                self.list_model_folders.append(dir)
+            
+            for dir in clone_subdir:
+                self.list_clone_folders.append(dir)
+                self.model_counts.append(len(os.listdir(dir)))
+
+            if self.reader.jobs[job]["model parameters"] == "default":
+                self.model_hparams = hparams.ModelHparams('cifar_resnet_20', 'kaiming_uniform', 'uniform')
+            else:
+                pass #to add in
+            self.max_epoch = int(self.reader.jobs[job]["num epochs"])
+        
+        print(f"Model counts: {self.model_counts}")
+        print(f"Clone folders: {self.list_clone_folders}")
+        #scan and find models
+        
+        for clone_idx, clone_dir in enumerate(self.list_clone_folders):
+            self.train_set = datasets.CIFAR10('/', train=True, download=True, transform=transforms.Compose([transforms.ToTensor(), transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])) # torch.load(self.list_model_folders[clone_idx] + "/forgetdata/trainset.pt")
+            self.forgot_correct_mask = torch.load(self.list_model_folders[clone_idx] + "/forgetdata/forgetmask_correct_epoch=" + str(self.max_epoch) + ".pt")
+            self.forgot_correct_dataset = torch.utils.data.Subset(self.train_set, self.forgot_correct_mask)
+            self.forget_correct_dataloader = torch.utils.data.DataLoader(self.forgot_correct_dataset, batch_size = 128) #to change: this call to batch_size
+            self.model_list = []
+            
+            for idx in range(self.model_counts[clone_idx]):
+                self.model = registry.get(self.model_hparams).cuda()
+                self.model.load_state_dict(torch.load(clone_dir+str(idx)+".pt"))
+                self.model_list.append(self.model)
+
+            catalog = self.classifyDataset(self.forget_correct_dataloader, self.model_list, self.num_examples[clone_idx])
+            torch.save(catalog, self.list_model_folders[clone_idx]+"/catalog.pt")
+            
+
 
     #measure at which noise level an example that's classified correctly becomes misclassifed
     #this function just classifies a dataset given a model
-    def classifyDataset(self, data_loader, models):
+    def classifyDataset(self, data_loader, models, num_examples):
         if self.num_examples==None:
             raise ValueError("Specify the size of the dataset please.")
 
         num_models = len(models)
-        __catalog = torch.zeros(num_models, self.num_examples)
+        __catalog = torch.zeros(num_models, num_examples)
 
         num_ex_per_batch = list()
         for batch in data_loader:
@@ -69,4 +124,3 @@ class postProcess:
                 largest_epsilon[j-smallest_value, 0:] = torch.tensor(heapq.nlargest(largestN,[epsilonForgotten[i] for i in idx]))
 
         return torch.flatten(largest_epsilon), torch.flatten(largest_forgotten)
-
