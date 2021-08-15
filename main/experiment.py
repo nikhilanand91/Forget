@@ -7,10 +7,6 @@ from Forget.training import trainer
 import os
 from Forget.datasets import createforgetdataset
 
-parent_dir_path = os.path.dirname(str(os.path.dirname(os.path.realpath(__file__))))
-sys.path.append(str(parent_dir_path) + "/open_lth/")
-print(f"Appending paths: {str(parent_dir_path)}")
-
 class run_experiment:
     """
     the experiment should call on config.py to get info and create the appropriate directories
@@ -20,6 +16,10 @@ class run_experiment:
     """
     
     def __init__(self, config_file = "Forget/config/default_config.ini"):
+        parent_dir_path = os.path.dirname(str(os.path.dirname(os.path.realpath(__file__))))
+        sys.path.append(str(parent_dir_path) + "/open_lth/")
+        print(f"Appending paths: {str(parent_dir_path)}")
+        
         #pretraining step:
 
         #get config files from parser
