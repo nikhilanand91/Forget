@@ -41,6 +41,10 @@ class postProcess:
         print(f"Model counts: {self.model_counts}")
         print(f"Clone folders: {self.list_clone_folders}")
         #scan and find models
+
+        self.epsilons = getEpsilons()
+        self.totalEpsilons = list()
+        self.totalForgotten = list()
         
         for clone_idx, clone_dir in enumerate(self.list_clone_folders):
             self.train_set = datasets.CIFAR10('/', train=True, download=True, transform=transforms.Compose([transforms.ToTensor(), transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])) # torch.load(self.list_model_folders[clone_idx] + "/forgetdata/trainset.pt")
@@ -56,8 +60,19 @@ class postProcess:
 
             catalog = self.classifyDataset(self.forget_correct_dataloader, self.model_list, self.num_examples[clone_idx])
             torch.save(catalog, self.list_model_folders[clone_idx]+"/catalog.pt")
-            
 
+            self.forget_correct_stats = torch.load(self.list_model_folders[clone_idx] + "/forgetdata/forgotten_correct_stats_epoch=" + str(self.max_epoch) + ".pt")
+            self.epsilonForgotten, self.timesForgotten = self.tabulateNoiseForget(catalog, self.epsilons, self.forget_correct_stats)
+            self.totalEpsilons.append(self.epsilonForgotten)
+            self.totalForgotten.append(self.timesForgotten)
+            torch.save(torch.tensor(self.epsilonForgotten),  self.list_model_folders[clone_idx]+"/epsilonForgotten.pt")
+            torch.save(torch.tensor(self.timesForgotten),  self.list_model_folders[clone_idx]+"/timesForgotten.pt")
+
+            self.totalEpsilonsTensor = torch.flatten(torch.Tensor(self.totalEpsilons))
+            self.totalForgottenTensor = torch.flatten(torch.Tensor(self.totalForgotten))
+
+            torch.save(self.totalEpsilonsTensor, self.list_model_folders[clone_idx]+"/epsilontotal.pt")
+            torch.save(self.totalForgottenTensor, self.list_model_folders[clone_idx]+"/timesforgottentotal.pt")
 
     #measure at which noise level an example that's classified correctly becomes misclassifed
     #this function just classifies a dataset given a model
@@ -94,7 +109,7 @@ class postProcess:
         return __catalog
     
     #returns a table consisting of {epsilon at which example was forgotten, times it was forgotten}
-    def tabulateNoiseForget(self, catalog, epsilonList, forgetStats):
+    def tabulateNoiseForget(self, catalog, epsilonList, forgetCorrectStats):
         epsilonForgotten = list()
         timesForgotten = list()
 
@@ -102,7 +117,7 @@ class postProcess:
             idx = next((i for i in range(len(catalog[0:,k])) if catalog[0:,k][i] == 0), None)
             if idx != None:
                 epsilonForgotten.append(epsilonList[idx])
-                timesForgotten.append(forgetStats[k])
+                timesForgotten.append(forgetCorrectStats[k])
         
         return epsilonForgotten, timesForgotten
 
@@ -124,3 +139,6 @@ class postProcess:
                 largest_epsilon[j-smallest_value, 0:] = torch.tensor(heapq.nlargest(largestN,[epsilonForgotten[i] for i in idx]))
 
         return torch.flatten(largest_epsilon), torch.flatten(largest_forgotten)
+
+def getEpsilons(num_points = 200, min_noise = 0., max_noise = 0.1):
+        return np.linspace(min_noise, max_noise, num_points)

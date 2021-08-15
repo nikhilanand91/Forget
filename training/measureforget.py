@@ -48,7 +48,7 @@ class measureForget:
         torch.save(self.forgetStatistics, savepath)
 
     def saveCorrect(self, store_directory):
-        savepath = store_directory + "correctdata/" + "correctstatsepoch="+str(self.train_iteration+1) +".pt"
+        savepath = store_directory + "forgetdata/" + "correctstatsepoch="+str(self.train_iteration+1) +".pt"
         torch.save(self.correctStatistics, savepath)
 
     def resetCorrectStatistics(self):

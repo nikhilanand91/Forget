@@ -86,7 +86,6 @@ class createForgetDataset:
 
     def getForgetMask(self, save_directory = "/", save = True):
         self.getForgetMask_has_run = True
-        #this loop can just be replaced with a list comprehension
         for k in range(len(self.sum_over_ep_flatten_forget)):
             if self.sum_over_ep_flatten_forget[k] >= self.forget_thres:
                 self.forget_mask.append(k)
@@ -103,6 +102,7 @@ class createForgetDataset:
                 self.forgotten_correct_stats.append(torch.IntTensor.item(self.sum_over_ep_flatten_forget[k]))
 
         if save:
+            torch.save(torch.tensor(self.forgotten_correct_stats), save_directory + "forgotten_correct_stats_epoch=" + str(self.max_epoch) + ".pt")
             torch.save(torch.tensor(self.forget_mask_correct), save_directory + "forgetmask_correct_epoch=" + str(self.max_epoch) + ".pt")
     
     def getFgtDatasetCorrect(self, save_directory = "/", save = True): #return a mask of those examples that were forgotten AND classified correctly
