@@ -86,6 +86,7 @@ class createForgetDataset:
 
     def getForgetMask(self, save_directory = "/", save = True):
         self.getForgetMask_has_run = True
+        #this loop can just be replaced with a list comprehension
         for k in range(len(self.sum_over_ep_flatten_forget)):
             if self.sum_over_ep_flatten_forget[k] >= self.forget_thres:
                 self.forget_mask.append(k)

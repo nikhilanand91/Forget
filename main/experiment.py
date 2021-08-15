@@ -62,7 +62,6 @@ class run_experiment:
         PROCESS STEP
         """
         print(f"Now processing output...")
-        crtForget = createforgetdataset.createforgetdataset()
+        crtForget = createforgetdataset.createForgetDataset()
         
 
-        
