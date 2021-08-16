@@ -7,6 +7,7 @@ from Forget.training import trainer
 import os
 from Forget.datasets import createforgetdataset
 from Forget.damage import damagemodel
+from Forget.postprocess import postprocess
 
 
 class run_experiment:
@@ -17,7 +18,7 @@ class run_experiment:
     2. Training (for each job, pass models onto trainer.py which trains it and stores the data)
     """
     
-    def __init__(self, config_file = os.getcwd()+"Forget/config/default_config.ini"):
+    def __init__(self, config_file = "Forget/config/default_config.ini"):
         parent_dir_path = os.path.dirname(str(os.path.dirname(os.path.realpath(__file__))))
         sys.path.append(os.getcwd()+"/Forget/open_lth/")
         #sys.path.append(str(parent_dir_path) + "/open_lth/")
@@ -69,3 +70,6 @@ class run_experiment:
         crtForget = createforgetdataset.createForgetDataset()
 
         dmg = damagemodel.damageModel()
+
+        procs = postprocess.postProcess()
+

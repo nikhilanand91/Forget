@@ -1,16 +1,18 @@
 import torch
 import os, os.path
 import sys
-sys.path.append("/")
-sys.path.append("/Forget/open_lth/")
 from Forget.open_lth.foundations import hparams
 from Forget.open_lth.models import registry
+from Forget.config import parser
+import numpy as np
+from torchvision import datasets, transforms, utils
+from torch.utils.data import random_split, DataLoader
 
 class postProcess:
     """
     Go through clones/ and for each clone load the forget_correct dataset and classify it.
     """
-    def __init__(self, config_file = "/Forget/config/default_config.ini"):
+    def __init__(self, config_file = os.getcwd()+"/Forget/config/default_config.ini"):
         self.reader = parser.readConfig(config_file)
         self.exp_name = self.reader.exp_info["name"]
         #self.num_jobs = int(self.reader.exp_info["number of jobs"])
@@ -68,8 +70,10 @@ class postProcess:
             torch.save(torch.tensor(self.epsilonForgotten),  self.list_model_folders[clone_idx]+"/epsilonForgotten.pt")
             torch.save(torch.tensor(self.timesForgotten),  self.list_model_folders[clone_idx]+"/timesForgotten.pt")
 
-            self.totalEpsilonsTensor = torch.flatten(torch.Tensor(self.totalEpsilons))
-            self.totalForgottenTensor = torch.flatten(torch.Tensor(self.totalForgotten))
+            #print(self.totalEpsilons)
+
+            self.totalEpsilonsTensor = torch.flatten(torch.Tensor([item for sublist in self.totalEpsilons for item in sublist]))
+            self.totalForgottenTensor = torch.flatten(torch.Tensor([item for sublist in self.totalForgotten for item in sublist]))
 
             torch.save(self.totalEpsilonsTensor, self.list_model_folders[clone_idx]+"/epsilontotal.pt")
             torch.save(self.totalForgottenTensor, self.list_model_folders[clone_idx]+"/timesforgottentotal.pt")
