@@ -6,6 +6,8 @@ import numpy
 from Forget.training import trainer
 import os
 from Forget.datasets import createforgetdataset
+from Forget.damage import damagemodel
+
 
 class run_experiment:
     """
@@ -15,9 +17,10 @@ class run_experiment:
     2. Training (for each job, pass models onto trainer.py which trains it and stores the data)
     """
     
-    def __init__(self, config_file = "Forget/config/default_config.ini"):
+    def __init__(self, config_file = os.getcwd()+"Forget/config/default_config.ini"):
         parent_dir_path = os.path.dirname(str(os.path.dirname(os.path.realpath(__file__))))
-        sys.path.append(str(parent_dir_path) + "/open_lth/")
+        sys.path.append(os.getcwd()+"/Forget/open_lth/")
+        #sys.path.append(str(parent_dir_path) + "/open_lth/")
         print(f"Appending paths: {str(parent_dir_path)}")
         
         #pretraining step:
@@ -42,6 +45,7 @@ class run_experiment:
         """
         TRAINING STEP
         """
+        
         print(f"Division of jobs (models/job): {self.num_train_per_job}")
         print(f"Starting training...")
         #training step:
@@ -63,3 +67,5 @@ class run_experiment:
         """
         print(f"Now processing output...")
         crtForget = createforgetdataset.createForgetDataset()
+
+        dmg = damagemodel.damageModel()

@@ -2,15 +2,15 @@ import torch
 import numpy as np
 import os
 import sys
-sys.path.append("/")
-sys.path.append("/Forget/open_lth/")
 from Forget.open_lth.foundations import hparams
 from Forget.open_lth.models import registry
 from pathlib import Path
+from Forget.config import parser
 
 class damageModel:
-    def __init__(self, config_file = "/Forget/config/default_config.ini"):
-
+    def __init__(self, config_file = os.getcwd()+"/Forget/config/default_config.ini"):
+        sys.path.append(os.getcwd()+"/Forget/open_lth/")
+        print(f"Appending {os.getcwd()}/Forget/open_lth/}")
         self.reader = parser.readConfig(config_file)
         self.exp_name = self.reader.exp_info["name"]
         #self.num_jobs = int(self.reader.exp_info["number of jobs"])
@@ -49,6 +49,9 @@ class damageModel:
         returns an array of length num_points, consisting of models increasingly damaged
         from Gaussian noise with stdev min_noise to max_noise
         """
+        from Forget.open_lth.foundations import hparams
+        from Forget.open_lth.models import registry
+        
         model.eval()
         self.model_clones = []
         model_state_dict = model.state_dict()
