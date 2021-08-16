@@ -9,15 +9,16 @@ training.
 import torch
 import os
 import sys
-sys.path.append(str("/")) #this will need to be fixed later
+#sys.path.append(str("/")) #this will need to be fixed later
 from Forget.config import parser
 from Forget.training import trainer
 import os
 
 class createForgetDataset:
-    def __init__(self, forget_thres = 3, config_file = "/Forget/config/default_config.ini"):
+    def __init__(self, forget_thres = 3, config_file = os.getcwd()+"/Forget/config/default_config.ini"):
         parent_dir_path = os.path.dirname(str(os.path.dirname(os.path.realpath(__file__))))
-        sys.path.append(str(parent_dir_path))
+        print(f"Appending path: {str(parent_dir_path)}")
+        sys.path.append(str(parent_dir_path)+"/")
         #assume latest epoch, go through forgetstats and correctstats
         #for each model, initialize the below variables, create the forget
         #dataset + save into forgetdata/ and also the forget+correct dataset.

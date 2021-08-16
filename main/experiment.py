@@ -63,5 +63,3 @@ class run_experiment:
         """
         print(f"Now processing output...")
         crtForget = createforgetdataset.createForgetDataset()
-        
-

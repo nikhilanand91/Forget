@@ -3,17 +3,15 @@ from pathlib import Path
 import configparser
 import os
 import sys
-#sys.path.append(str(os.path.dirname(os.path.realpath(__file__))))
-parent_dir_path = os.path.dirname(os.getcwd())
-
-
 
 @dataclass
 class readConfig:
-    config_file: str = "/Forget/config/default_config.ini"
+    config_file: str = os.getcwd()+"/Forget/config/default_config.ini"
     
     def __post_init__(self):
         print(f"Current working directory: {os.getcwd()}")
+        sys.path.append(str(os.path.dirname(os.path.realpath(__file__))))
+        parent_dir_path = os.path.dirname(os.getcwd())
         #parent_dir_path = Path(Path().absolute()).parent
         #parent_dir_path = os.path.dirname(os.getcwd())
         #sys.path.append(str(parent_dir_path) + '/open_lth/') #change this
