@@ -10,7 +10,7 @@ from Forget.config import parser
 class damageModel:
     def __init__(self, config_file = os.getcwd()+"/Forget/config/default_config.ini"):
         sys.path.append(os.getcwd()+"/Forget/open_lth/")
-        print(f"Appending {os.getcwd()}/Forget/open_lth/}")
+        print(f"Appending {os.getcwd()}/Forget/open_lth/")
         self.reader = parser.readConfig(config_file)
         self.exp_name = self.reader.exp_info["name"]
         #self.num_jobs = int(self.reader.exp_info["number of jobs"])
