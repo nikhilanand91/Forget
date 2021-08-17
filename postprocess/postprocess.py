@@ -49,7 +49,7 @@ class postProcess:
         self.totalForgotten = list()
         
         for clone_idx, clone_dir in enumerate(self.list_clone_folders):
-            self.train_set = datasets.CIFAR10('/', train=True, download=True, transform=transforms.Compose([transforms.ToTensor(), transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])) # torch.load(self.list_model_folders[clone_idx] + "/forgetdata/trainset.pt")
+            self.train_set = datasets.CIFAR10('/', train=True, download=False, transform=transforms.Compose([transforms.ToTensor(), transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])) # torch.load(self.list_model_folders[clone_idx] + "/forgetdata/trainset.pt")
             self.forgot_correct_mask = torch.load(self.list_model_folders[clone_idx] + "/forgetdata/forgetmask_correct_epoch=" + str(self.max_epoch) + ".pt")
             self.forgot_correct_dataset = torch.utils.data.Subset(self.train_set, self.forgot_correct_mask)
             self.forget_correct_dataloader = torch.utils.data.DataLoader(self.forgot_correct_dataset, batch_size = 128) #to change: this call to batch_size
