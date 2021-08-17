@@ -16,7 +16,7 @@ import os
 
 class createForgetDataset:
     def __init__(self, forget_thres = 3, config_file = os.getcwd()+"/Forget/config/default_config.ini"):
-        parent_dir_path = os.path.dirname(str(os.path.dirname(os.path.realpath(__file__))))
+        parent_dir_path = Path(Path().absolute()).parent #os.path.dirname(str(os.path.dirname(os.path.realpath(__file__))))
         print(f"Appending path: {str(parent_dir_path)}")
         sys.path.append(str(parent_dir_path)+"/")
         #assume latest epoch, go through forgetstats and correctstats
@@ -35,7 +35,7 @@ class createForgetDataset:
         self.list_forget_folders = []
         print(f"Reading from output files in experiment {self.exp_name}...")
         for job in self.reader.jobs: #remember to put everything into forgetdata
-            job_subdir = ["/"+self.exp_name + "/" + job + "/" + f.name + "/forgetdata/" for f in os.scandir("/" + self.exp_name + "/" + job + "/") if f.is_dir()]
+            job_subdir = [str(parent_dir_path) + "/"+self.exp_name + "/" + job + "/" + f.name + "/forgetdata/" for f in os.scandir("/" + self.exp_name + "/" + job + "/") if f.is_dir()]
             for dir in job_subdir:
                 self.list_forget_folders.append(dir)
             #self.list_correct_folders = [self.exp_name + "/" + job + "/" + f.name + "/correctdata/" for f in os.scandir("/" + self.exp_name + "/" + job + "/") if f.is_dir()]

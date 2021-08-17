@@ -43,8 +43,8 @@ class readConfig:
         parent_dir_path = Path(Path().absolute()).parent
 
         #make experiment path
-        print(f"Experiment info: {self.exp_info}")
         self.exp_path = str(parent_dir_path) + "/" + self.exp_info["name"]
+        print(f"Experiment info and path: {self.exp_info} , {self.exp_path}")
         Path(self.exp_path).mkdir(parents=True, exist_ok=True)
 
         #for each job and for each model in the job, make the corresponding directory

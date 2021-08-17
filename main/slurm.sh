@@ -17,4 +17,4 @@ python /home/mila/n/nikhil.anand/ForgetExperiments/Forget/main/run.py
 
 echo "Done executing!" > "test.log"
 
-cp -r $SLURM_TMPDIR/ /home/mila/n/nikhil.anand/ForgetExperiments/
+cp -r $SLURM_TMPDIR/ /home/mila/n/nikhil.anand/ForgetTest/

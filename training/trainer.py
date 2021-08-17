@@ -18,7 +18,7 @@ class train:
         self.num_epochs = int(job_info["num epochs"])
         self.save_every = int(job_info["save every"])
         if exp_info["storage directory"] == "default":
-            self.exp_directory = str(parent_dir_path) + exp_info["name"] + "/"
+            self.exp_directory = str(parent_dir_path) + "/" + exp_info["name"] + "/"
         else:
             self.exp_directory = exp_info["storage directory"]
 

@@ -15,6 +15,7 @@ class postProcess:
     def __init__(self, config_file = os.getcwd()+"/Forget/config/default_config.ini"):
         self.reader = parser.readConfig(config_file)
         self.exp_name = self.reader.exp_info["name"]
+        parent_dir_path = Path(Path().absolute()).parent
         #self.num_jobs = int(self.reader.exp_info["number of jobs"])
         
         self.list_clone_folders = []
@@ -24,8 +25,8 @@ class postProcess:
         self.model_counts = []
         print(f"Reading from clones files in experiment {self.exp_name}...")
         for job in self.reader.jobs: #remember to put everything into forgetdata
-            clone_subdir = ["/"+self.exp_name + "/" + job + "/" + f.name + "/clones/" for f in os.scandir("/" + self.exp_name + "/" + job + "/") if f.is_dir()]
-            model_subdir = ["/"+self.exp_name + "/" + job + "/" + f.name for f in os.scandir("/" + self.exp_name + "/" + job + "/") if f.is_dir()]
+            clone_subdir = [str(parent_dir_path)+"/"+self.exp_name + "/" + job + "/" + f.name + "/clones/" for f in os.scandir("/" + self.exp_name + "/" + job + "/") if f.is_dir()]
+            model_subdir = [str(parent_dir_path)+"/"+self.exp_name + "/" + job + "/" + f.name for f in os.scandir("/" + self.exp_name + "/" + job + "/") if f.is_dir()]
             for dir in model_subdir:
                 self.num_examples.append(torch.load(dir + "/forgetdata/num_forgotten.pt")[1])
                 self.list_model_folders.append(dir)
