@@ -13,6 +13,7 @@ import sys
 from Forget.config import parser
 from Forget.training import trainer
 import os
+from pathlib import Path
 
 class createForgetDataset:
     def __init__(self, forget_thres = 3, config_file = os.getcwd()+"/Forget/config/default_config.ini"):
@@ -35,7 +36,9 @@ class createForgetDataset:
         self.list_forget_folders = []
         print(f"Reading from output files in experiment {self.exp_name}...")
         for job in self.reader.jobs: #remember to put everything into forgetdata
-            job_subdir = [str(parent_dir_path) + "/"+self.exp_name + "/" + job + "/" + f.name + "/forgetdata/" for f in os.scandir("/" + self.exp_name + "/" + job + "/") if f.is_dir()]
+            mypathdbg = str(parent_dir_path) + "/"+self.exp_name + "/" + job
+            print(f"Looking for subdirectories in : {mypathdbg}")
+            job_subdir = [str(parent_dir_path) + "/"+self.exp_name + "/" + job + "/" + f.name + "/forgetdata/" for f in os.scandir(str(parent_dir_path) + "/"+self.exp_name + "/" + job + "/") if f.is_dir()]
             for dir in job_subdir:
                 self.list_forget_folders.append(dir)
             #self.list_correct_folders = [self.exp_name + "/" + job + "/" + f.name + "/correctdata/" for f in os.scandir("/" + self.exp_name + "/" + job + "/") if f.is_dir()]

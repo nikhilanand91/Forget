@@ -7,6 +7,8 @@ from Forget.config import parser
 import numpy as np
 from torchvision import datasets, transforms, utils
 from torch.utils.data import random_split, DataLoader
+from pathlib import Path
+
 
 class postProcess:
     """
@@ -25,8 +27,8 @@ class postProcess:
         self.model_counts = []
         print(f"Reading from clones files in experiment {self.exp_name}...")
         for job in self.reader.jobs: #remember to put everything into forgetdata
-            clone_subdir = [str(parent_dir_path)+"/"+self.exp_name + "/" + job + "/" + f.name + "/clones/" for f in os.scandir("/" + self.exp_name + "/" + job + "/") if f.is_dir()]
-            model_subdir = [str(parent_dir_path)+"/"+self.exp_name + "/" + job + "/" + f.name for f in os.scandir("/" + self.exp_name + "/" + job + "/") if f.is_dir()]
+            clone_subdir = [str(parent_dir_path)+"/"+self.exp_name + "/" + job + "/" + f.name + "/clones/" for f in os.scandir(str(parent_dir_path) + "/" + self.exp_name + "/" + job + "/") if f.is_dir()]
+            model_subdir = [str(parent_dir_path)+"/"+self.exp_name + "/" + job + "/" + f.name for f in os.scandir(str(parent_dir_path) + "/" + self.exp_name + "/" + job + "/") if f.is_dir()]
             for dir in model_subdir:
                 self.num_examples.append(torch.load(dir + "/forgetdata/num_forgotten.pt")[1])
                 self.list_model_folders.append(dir)
