@@ -14,11 +14,12 @@ class damageModel:
         self.reader = parser.readConfig(config_file)
         self.exp_name = self.reader.exp_info["name"]
         #self.num_jobs = int(self.reader.exp_info["number of jobs"])
+        parent_dir_path = Path(Path().absolute()).parent
         
         self.list_model_folders = []
         print(f"Reading from output files in experiment {self.exp_name}...")
         for job in self.reader.jobs: #remember to put everything into forgetdata
-            job_subdir = ["/"+self.exp_name + "/" + job + "/" + f.name for f in os.scandir("/" + self.exp_name + "/" + job + "/") if f.is_dir()]
+            job_subdir = [str(parent_dir_path)+"/"+self.exp_name + "/" + job + "/" + f.name for f in os.scandir(str(parent_dir_path)+"/" + self.exp_name + "/" + job + "/") if f.is_dir()]
             for dir in job_subdir:
                 self.list_model_folders.append(dir)
             self.max_epoch = int(self.reader.jobs[job]["num epochs"])
