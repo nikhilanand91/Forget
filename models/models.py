@@ -3,11 +3,9 @@ import abc
 class Model(abc.ABC):
 
     @abc.abstractmethod
-    def get_model():
-        """ Function to get model. """
+    def forward(self):
         pass
 
     @abc.abstractmethod
-    def get_optimizer():
-        """ Get the optimizer. """
+    def get_model(self):
         pass

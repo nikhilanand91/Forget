@@ -42,6 +42,7 @@ class TrainRunner(Runner):
             if arg_value != None and arg in dir(train_hparams):
                 setattr(train_hparams, arg, arg_value)
 
+        train_hparams = train_hparams.create_from_hparams()
         return TrainRunner(train_hparams)
 
     def display_output_location(self):

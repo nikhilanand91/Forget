@@ -2,7 +2,7 @@
 Basic utility functions for printing.
 """
 
-from training.hparams import TrainHParams
+from training.train_hparams import TrainHParams
 
 
 def print_train_hparams(train_hparams: TrainHParams) -> None:

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from base.hparams import HParams
+from models.cifar_resnet20 import CifarResnet20
 
 @dataclass
 class TrainHParams(HParams):
@@ -38,6 +39,3 @@ class TrainHParams(HParams):
     num_ep: int = 20
     chkpoint_step: int = 5
     batch_size: int = 32
-
-    def create_from_hparams(self) -> 'TrainHParams':
-        pass
