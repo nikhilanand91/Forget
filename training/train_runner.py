@@ -2,7 +2,7 @@ import argparse
 from dataclasses import dataclass
 
 from base.runner import Runner
-from training.hparams import TrainHParams
+from training.train_hparams import TrainHParams
 from training import train
 
 @dataclass

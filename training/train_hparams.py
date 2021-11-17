@@ -1,8 +1,8 @@
 from dataclasses import dataclass
-import csv
+from base.hparams import HParams
 
 @dataclass
-class TrainHParams:
+class TrainHParams(HParams):
     """
     This class contains the training hyperparameter details. These include:
     
@@ -41,27 +41,3 @@ class TrainHParams:
 
     def create_from_hparams(self) -> 'TrainHParams':
         pass
-
-
-@dataclass
-class RobustnessParams:
-    """
-    This class contains hyperparameters for measuring example robustness.
-
-    -forget_thres: how many times an example needs to be forgotten to be recorded (default 3)
-    -granularity: when to log robustness, either 'by_iter' or 'by_ep' (default by iteration)
-    
-    """
-
-    forget_thres: int = 3
-    granularity: str = 'by_iter'
-    avg_over_inits: bool = True
-    randomize_batches: bool = False
-
-def save_to_file(output_location: str) -> None:
-    with open(output_location + '/test.csv', 'w', newline='') as csvfile:
-        param_writer = csv.writer(csvfile, delimiter=' ',
-                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
-
-        param_writer.writerow(['Spam'] * 5 + ['Baked Beans'])
-        param_writer.writerow(['Spam', 'Lovely Spam', 'Wonderful Spam'])

@@ -1,7 +1,7 @@
-import sys
-import argparse
+from models.models import Model
+from training import 
 
-def main():
-    print(f'Code to test example robustness!')
+class CifarResnet20(Model):
 
+    def __init__(self, train_hparams: HParams):
     

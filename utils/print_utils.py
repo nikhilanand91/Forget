@@ -28,3 +28,11 @@ def print_train_hparams(train_hparams: TrainHParams) -> None:
     """
 
     return
+
+def save_to_file(output_location: str) -> None:
+    with open(output_location + '/test.csv', 'w', newline='') as csvfile:
+        param_writer = csv.writer(csvfile, delimiter=' ',
+                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+
+        param_writer.writerow(['Spam'] * 5 + ['Baked Beans'])
+        param_writer.writerow(['Spam', 'Lovely Spam', 'Wonderful Spam'])
