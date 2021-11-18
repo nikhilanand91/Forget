@@ -5,8 +5,10 @@ class HParams(abc.ABC):
     training hyperparameters or those used for robustness
     experiments."""
 
+    """
     @abc.abstractmethod
     def create_from_hparams(self) -> 'HParams':
-        """Create the object from specified hparams, which
-        can then be passed onto a training loop."""
+        #Create the object from specified hparams, which
+        #can then be passed onto a training loop.
         pass
+    """

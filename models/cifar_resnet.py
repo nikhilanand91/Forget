@@ -143,5 +143,5 @@ class CifarResnet(Model):
     def forward(self):
         pass
 
-    def get_model(self):
+    def get_resnet_20(self):
         return resnet20()
