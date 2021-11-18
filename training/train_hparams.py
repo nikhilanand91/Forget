@@ -17,12 +17,13 @@ class TrainHParams(HParams):
     """
 
     allowed_params = {'--model': str, '--dataset': str, '--output_location': str, 
-                      '--optim': str, '--lr': float, '--momentum': float, '--num_ep': int, 
+                      '--optim': str, '--loss': str, '--lr': float, '--momentum': float, '--num_ep': int,
                       '--chkpoint_step': int, '--batch_size': int}
     param_desc = {'--model': 'the name of the model to train',
                   '--dataset': 'the name of the dataset to train on',
                   '--output_location': 'where to store the checkpointed models',
                   '--optim': 'which optimizer to use',
+                  '--loss': 'loss function do use (default cross entropy)'
                   '--lr': 'learning rate (default 1e-3)',
                   '--momentum': 'momentum (default 0.9)',
                   '--num_ep': 'number of epochs to train (default 20ep)',
@@ -34,8 +35,9 @@ class TrainHParams(HParams):
     output_location: str = ''
 
     optim: str = 'SGD'
+    loss: str = 'CrossEntropy'
     lr: float = 1e-3
     momentum: float = 0.9
-    num_ep: int = 20
+    num_ep: int = 10
     chkpoint_step: int = 5
-    batch_size: int = 32
+    batch_size: int = 128
