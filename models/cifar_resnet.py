@@ -132,7 +132,7 @@ def test(net):
     print("Total layers", len(list(filter(lambda p: p.requires_grad and len(p.data.size())>1, net.parameters()))))
 
 
-class CifarResnet(Model):
+class CifarResnet:
     """
     We get the CifarResnet model from OpenLTH to save some time.
     """

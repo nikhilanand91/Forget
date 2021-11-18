@@ -23,7 +23,7 @@ class TrainHParams(HParams):
                   '--dataset': 'the name of the dataset to train on',
                   '--output_location': 'where to store the checkpointed models',
                   '--optim': 'which optimizer to use',
-                  '--loss': 'loss function do use (default cross entropy)'
+                  '--loss': 'loss function do use (default cross entropy)',
                   '--lr': 'learning rate (default 1e-3)',
                   '--momentum': 'momentum (default 0.9)',
                   '--num_ep': 'number of epochs to train (default 20ep)',

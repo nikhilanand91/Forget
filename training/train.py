@@ -3,6 +3,7 @@ from utils.print_utils import print_train_hparams
 from base import model_registry
 from datasets.datasets import Dataset
 
+import torch
 from torch.utils.data import DataLoader
 
 def train_loop(train_hparams: TrainHParams):
@@ -12,11 +13,11 @@ def train_loop(train_hparams: TrainHParams):
     print_train_hparams(train_hparams)
     
     #Get dataset, model, loss, and optimizer.
-    dataset = Dataset().get_dataset(dataset_name = train_hparams.dataset, \
-                                           output_location = train_hparams.output_location)
+    dataset = Dataset(dataset_name = train_hparams.dataset, \
+                      output_location = train_hparams.output_location).get_dataset()
     dataloader = DataLoader(dataset = dataset, batch_size = train_hparams.batch_size)
 
-    model = model_registry.get_model(model_name = train_hparams.model)
+    model = model_registry.get_model(model_name = train_hparams.model).cuda()
     loss = model_registry.get_loss(loss_name = train_hparams.loss)
     optim = model_registry.get_optimizer(hparams = train_hparams, model = model)
 
@@ -37,4 +38,4 @@ def train_loop(train_hparams: TrainHParams):
             optim.step()
 
             batch_accuracy.append(y.eq(outputs.detach().argmax(dim=1).cpu()).float().mean())
-        print(batch_accuracy)
+        print(torch.tensor(batch_accuracy).mean())
