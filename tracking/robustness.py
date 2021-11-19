@@ -1,6 +1,23 @@
 from tracking.metriclogger import MetricLogger
+from dataclasses import dataclass
+from tracking.robust_mask import RobustMask
 
+@dataclass
 class Robustness(MetricLogger):
+
+    dataset_size: int = 0
+    batch_size: int = 0
+    learned_thres: int = 3 #learned threshold in epochs
+    granularity: str = 'by_ep'
+
+    def __post_init__(self):
+
+        if self.dataset_size == 0 or self.batch_size == 0:
+            raise ValueError('Invalid dataset size...')
+            sys.exit(0)
+
+        self.robustness_stats = 
+
 	
 	def description() -> str:
     	return 'Metric to log robustness statistics.'
@@ -18,4 +35,4 @@ class Robustness(MetricLogger):
         """Functions to execute during once batch is loaded and after optimizer step."""
 
     def end_epoch() -> None:
-        """Functions to execute at the end of an epoch."""    
+        """Functions to execute at the end of an epoch."""
