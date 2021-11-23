@@ -2,6 +2,7 @@ from training.train_hparams import TrainHParams
 from utils.print_utils import print_train_hparams
 from base import model_registry
 from datasets.datasets import Dataset
+from tracking.robustness import Robustness
 
 import torch
 from torch.utils.data import DataLoader
@@ -23,6 +24,9 @@ def train_loop(train_hparams: TrainHParams):
 
     #define accuracy and loss
     batch_accuracy = list()
+
+    #define which metrics we're logging
+    metric = Robustness(dataset_size = len(dataset), batch_size = train_hparams.batch_size)
 
     #Loop over epochs and batches.
     model.train()

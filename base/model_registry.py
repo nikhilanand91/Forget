@@ -4,7 +4,7 @@ from torch import nn, optim
 
 def get_model(model_name: str):
     if model_name == 'cifar_resnet_20':
-        return CifarResnet.get_resnet_20()
+        return CifarResnet().get_resnet_20()
 
 def get_optimizer(hparams: TrainHParams, model: nn.Module):
     if hparams.optim == 'SGD' or hparams.optim == 'sgd':

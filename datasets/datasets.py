@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from torchvision import datasets, transforms
 from typing import List
+from torch.utils.data import DataLoader
 
 @dataclass
 class Dataset:
@@ -26,3 +27,15 @@ class Dataset:
                                     train = self.train, 
                                     download = self.download, 
                                     transform = transform)
+
+    def get_relative_ordering(self, batch, dataloader: DataLoader):
+        """Get relative ordering of examples in a batch to a dataloader.
+        Useful utility function when dataloader is shuffled between epochs."""
+        order = []
+        for example, labels in enumerate(batch):
+            for batch_idx, original_batch in enumerate(dataloader):
+                orig_ex, orig_labels = original_batch
+                for ex_idx, ex in enumerate(orig_ex):
+                    if all(torch.eq(example, ex)):
+                        order.append([batch_idx, ex_idx])
+        return order

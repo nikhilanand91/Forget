@@ -6,28 +6,28 @@ class MetricLogger(abc.ABC):
     """
 
     @abc.abstractmethod
-    def description() -> str:
+    def description(self) -> str:
         """A description of this tracker."""
 
         pass
 
     @abc.abstractmethod
-    def pre_training() -> None:
+    def pre_training(self) -> None:
         """Functions to execute before training loop starts."""
 
     @abc.abstractmethod
-    def start_epoch() -> None:
+    def start_epoch(self) -> None:
         """Functions to execute at the start of each epoch but before we load a batch."""
 
     @abc.abstractmethod
-    def pre_iteration() -> None:
+    def pre_iteration(self) -> None:
         """Functions to execute during once batch is loaded but before optimizer step."""
 
     @abc.abstractmethod
-    def post_iteration() -> None:
+    def post_iteration(self) -> None:
         """Functions to execute during once batch is loaded and after optimizer step."""
 
     @abc.abstractmethod
-    def end_epoch() -> None:
+    def end_epoch(self) -> None:
         """Functions to execute at the end of an epoch."""
     
