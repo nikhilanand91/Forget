@@ -8,7 +8,6 @@ class MetricLogger(abc.ABC):
     @abc.abstractmethod
     def description(self) -> str:
         """A description of this tracker."""
-
         pass
 
     @abc.abstractmethod
