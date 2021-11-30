@@ -1,9 +1,11 @@
-from base.metriclogger import MetricLogger
-from tracking.classification_utils import classify_batch
+
 from dataclasses import dataclass
-from tracking.robust_mask import RobustMask
-import torch
+from collections.abc import Iterable
 from typing import List
+import torch
+
+from base.metriclogger import MetricLogger
+from tracking.robust_mask import RobustMask
 
 @dataclass
 class Robustness(MetricLogger):
@@ -20,6 +22,8 @@ class Robustness(MetricLogger):
             sys.exit(0)
 
         self.learned_examples = list()
+        self.learned_mask = RobustMask(dataset_size = dataset_size)
+
         self.correct_examples = list()
 
         self._model_outputs = None
@@ -59,7 +63,7 @@ class Robustness(MetricLogger):
         """Functions to execute at the start of each epoch but before we load a batch."""
         pass
 
-    def pre_iteration(self, model_outputs: torch.Tensor, targets: torch.Tensor) -> None:
+    def pre_iteration(self, model_outputs: torch.Tensor, targets: torch.Tensor, ordering: Iterable) -> None:
         """Functions to execute during once batch is loaded but before optimizer step."""
         self._model_outputs = model_outputs
         self._targets = targets
@@ -68,13 +72,14 @@ class Robustness(MetricLogger):
                 if torch.argmax(output) == self._targets[idx]:
                     self.classification[idx] = 1
 
-        self.robust_mask.
+        self.learned_examples.append([self._epoch, self.learned_mask.set_mask_on(self.classification, ordering)])
 
     def post_iteration(self) -> None:
         """Functions to execute during once batch is loaded and after optimizer step."""
+        pass
 
     def end_epoch(self) -> None:
         """Functions to execute at the end of an epoch."""
-
+        self._epoch += 1
 
 

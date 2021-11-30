@@ -42,13 +42,13 @@ def train_loop(train_hparams: TrainHParams):
         for batch in dataloader:
             x, y = batch
 
-            ordering = dataset.get_relative_ordering(batch = batch, dataloader = dataloader) if train_hparams.rand_batches \
-                       else dataset.get_absolute_ordering(batch = batch, dataloader = dataloader)
+            ordering = dataset.ordering if train_hparams.rand_batches \
+                       else iter(range(len(dataset)))
 
             x = x.cuda()
             outputs = model(x)
 
-            robustness_metric.pre_iteration(outputs.detach(), y)
+            robustness_metric.pre_iteration(outputs.detach(), y, ordering)
 
             J = loss(outputs, y.cuda())
             model.zero_grad()

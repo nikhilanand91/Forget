@@ -1,8 +1,9 @@
 from dataclasses import dataclass, field
 from torchvision import datasets, transforms
 from typing import List
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, SequentialSampler
 from base.dataset import Dataset
+from base.random_sampler import RandomSampler
 
 @dataclass
 class Cifar10(Dataset):
@@ -13,6 +14,7 @@ class Cifar10(Dataset):
 
     def __post_init__(self):
         self.dataset = None
+        self.ordering = None
 
     def get_dataset(self, save_location: str = '/'):           
         self.dataset = datasets.CIFAR10(root = save_location, 
@@ -23,14 +25,20 @@ class Cifar10(Dataset):
         return self.dataset
 
     def get_dataloader(self, batch_size: int, shuffle: bool = False):
-        if self.dataset != None:
-            return DataLoader(dataset = self.dataset, batch_size = batch_size, shuffle = shuffle)
-        else:
+        if self.dataset == None:
             raise ValueError('No dataset found!')
             sys.exit(1)
 
-    def get_relative_ordering(self, batch, dataloader: DataLoader):
-        """Get relative ordering of examples in a batch to the loaded dataset."""
+        if shuffle:
+            sampler = RandomSampler()
+            self.ordering = sampler.shuffle()
+        else:
+            sampler = SequentialSampler()
+        
+        return DataLoader(dataset = self.dataset, batch_size = batch_size, sampler = sampler)
+            
+"""    def get_relative_ordering(self, batch, dataloader: DataLoader):
+
         if self.dataset == None:
             raise ValueError('Set the dataset and dataloader first!')
             sys.exit(1)
@@ -47,11 +55,10 @@ class Cifar10(Dataset):
     def get_absolute_ordering(self, batch, dataloader: DataLoader):
         if self.dataset == None:
             raise ValueError('Set the dataset and dataloader first!')
-            sys.exit(1)
+            sys.exit(1)"""
 
-        
 
     def set_transforms(self, transform = transforms.Compose([transforms.ToTensor(), \
                                          transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])):
-        if transform != None:
-            self.transforms_to_apply = transform
+        
+        self.transforms_to_apply = transform
