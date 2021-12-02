@@ -84,7 +84,6 @@ class Robustness(MetricLogger):
         self.correct_examples[self._epoch, self._iteration] = self.correct_mask.mask
 
 
-
     def post_iteration(self) -> None:
         """Functions to execute during once batch is loaded and after optimizer step."""
         self._iteration += 1
@@ -94,7 +93,7 @@ class Robustness(MetricLogger):
         self._epoch += 1
 
     def end_training(self) -> None:
-        #compute robust mask and write to file
+        #save the mask of correct examples and which examples they are to a file
         save_object(object = self.correct_examples,
                     output_location = self.output_location,
                     object_name = 'CorrectExamples')
@@ -102,5 +101,3 @@ class Robustness(MetricLogger):
         save_object(object = self.example_order,
                     output_location = self.output_location,
                     object_name = 'ExampleOrder')
-
-
