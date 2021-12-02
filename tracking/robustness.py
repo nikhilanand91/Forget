@@ -34,8 +34,7 @@ class Robustness(MetricLogger):
         self._epoch = 0
         self.classification = None
 
-	
-	def description(self) -> str:
+    def description(self) -> str:
     	return 'Metric to log robustness statistics.'
 
     @property
@@ -52,8 +51,8 @@ class Robustness(MetricLogger):
     def iteration(self):
         return self._iteration
 
-    @batch_counter.setter
-    def batch_counter(self, value):
+    @iteration.setter
+    def iteration(self, value):
         if value < 0:
             raise ValueError('Cannot set batch counter < 0.')
         self._iteration = value
