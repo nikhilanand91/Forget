@@ -39,16 +39,18 @@ def train_loop(train_hparams: TrainHParams):
         if train_hparams.rand_batches:
             dataloader = dataset.get_dataloader(batch_size = train_hparams.batch_size, shuffle = True)
 
-        for batch in dataloader:
-            x, y = batch
+        ordering = dataset.ordering if train_hparams.rand_batches \
+                   else iter(range(len(dataset)))
 
-            ordering = dataset.ordering if train_hparams.rand_batches \
-                       else iter(range(len(dataset)))
+        for order, batch in zip(ordering, dataloader):
+            x, y = batch
 
             x = x.cuda()
             outputs = model(x)
 
-            robustness_metric.pre_iteration(outputs.detach(), y, ordering)
+            print(f'Order: {order}')
+
+            robustness_metric.pre_iteration(outputs.detach(), y, order)
 
             J = loss(outputs, y.cuda())
             model.zero_grad()
@@ -63,3 +65,5 @@ def train_loop(train_hparams: TrainHParams):
 
         
         metric.end_epoch()
+
+    metric.end_training()
