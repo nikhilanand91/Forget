@@ -11,9 +11,10 @@ class CorrectMask(Mask):
 		self.mask = torch.zeros(dataset_size)
 
 	def set_mask_on(classification, ordering):
-		for classification, order in zip(classification, ordering):
-			if classification:
+		for classified_correctly, order in zip(classification, ordering):
+			if classified_correctly:
 				self.mask[order] = 1
 
-	def apply_mask(Dataset):
-		pass
+	def apply_mask(dataset: Dataset):
+		dataset_to_apply_on = dataset.get_dataset()
+		return torch.utils.data.Subset(dataset_to_apply_on, self.mask)

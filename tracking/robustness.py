@@ -7,6 +7,7 @@ import torch
 from base.metriclogger import MetricLogger
 from tracking.robust_mask import RobustMask
 from tracking.correct_mask import CorrectMask
+from utils import save_object
 
 @dataclass
 class Robustness(MetricLogger):
@@ -15,6 +16,7 @@ class Robustness(MetricLogger):
     batch_size: int = 0
     learned_thres: int = 3 #learned threshold in epochs
     granularity: str = 'by_ep'
+    output_location: str = '/'
 
     def __post_init__(self):
 
@@ -24,10 +26,10 @@ class Robustness(MetricLogger):
 
         self.model_outputs = {}
         self.correct_examples = {}
+        self.example_order = {}
+
         self.correct_mask = CorrectMask(dataset_size = dataset_size)
 
-        self._model_outputs = None
-        self._targets = None
         self._iteration = 0
         self._epoch = 0
         self.classification = None
@@ -66,17 +68,22 @@ class Robustness(MetricLogger):
 
     def pre_iteration(self, model_outputs: torch.Tensor, targets: torch.Tensor, ordering = None) -> None:
         """Functions to execute during once batch is loaded but before optimizer step."""
-        self._model_outputs = model_outputs
-        self._targets = targets
-        self.classification = torch.zeros(len(self._model_outputs))
-            for idx, output in enumerate(self._model_outputs):
+        if not ordering:
+            raise ValueError('Specify the order in which the examples appear in this base relative to original dataset!')
+            sys.exit(1)
+
+        self.model_outputs[self._epoch, self._iteration] = model_outputs
+        self.example_order[self._epoch, self._iteration] = ordering
+
+        self.classification = torch.zeros(len(model_outputs))
+            for idx, output in enumerate(model_outputs):
                 if torch.argmax(output) == self._targets[idx]:
                     self.classification[idx] = 1
 
         self.correct_mask.set_mask_on(positions = self.classification, ordering = ordering)
-        self.correct_examples[self._epoch, self._iteration] = self.correct_mask
+        self.correct_examples[self._epoch, self._iteration] = self.correct_mask.mask
 
-        #save ordering, outputs
+
 
     def post_iteration(self) -> None:
         """Functions to execute during once batch is loaded and after optimizer step."""
@@ -88,6 +95,12 @@ class Robustness(MetricLogger):
 
     def end_training(self) -> None:
         #compute robust mask and write to file
-        pass
+        save_object(object = self.correct_examples,
+                    output_location = self.output_location,
+                    object_name = 'CorrectExamples')
+
+        save_object(object = self.example_order,
+                    output_location = self.output_location,
+                    object_name = 'ExampleOrder')
 
 

@@ -24,7 +24,9 @@ def train_loop(train_hparams: TrainHParams):
     batch_accuracy = list()
 
     #define which metrics we're logging
-    robustness_metric = Robustness(dataset_size = len(dataset), batch_size = train_hparams.batch_size)
+    robustness_metric = Robustness(dataset_size = len(dataset),
+                                   batch_size = train_hparams.batch_size,
+                                   output_location = train_hparams.output_location)
     #accuracy_metric = Accuracy()
 
     
@@ -50,7 +52,9 @@ def train_loop(train_hparams: TrainHParams):
 
             print(f'Order: {order}')
 
-            robustness_metric.pre_iteration(outputs.detach(), y, order)
+            robustness_metric.pre_iteration(model_outputs = outputs.detach(),
+                                            targets = y,
+                                            ordering = order)
 
             J = loss(outputs, y.cuda())
             model.zero_grad()
