@@ -75,9 +75,9 @@ class Robustness(MetricLogger):
         self.example_order[self._epoch, self._iteration] = ordering
 
         self.classification = torch.zeros(len(model_outputs))
-            for idx, output in enumerate(model_outputs):
-                if torch.argmax(output) == self._targets[idx]:
-                    self.classification[idx] = 1
+        for idx, output in enumerate(model_outputs):
+            if torch.argmax(output) == self._targets[idx]:
+                self.classification[idx] = 1
 
         self.correct_mask.set_mask_on(positions = self.classification, ordering = ordering)
         self.correct_examples[self._epoch, self._iteration] = self.correct_mask.mask
