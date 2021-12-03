@@ -12,13 +12,13 @@ def train_loop(train_hparams: TrainHParams):
     print_train_hparams(train_hparams)
     
     #Get dataset, model, loss, and optimizer.
-    dataset_object = dataset_registry.get_dataset_object(dataset_name = train_hparams.dataset, \
-                                                         save_location = train_hparams.output_location)
+    dataset_object = dataset_registry.get_dataset_object(dataset_name = train_hparams.dataset,
+                                                         save_location = train_hparams.output_location,
+                                                         shuffle = train_hparams.rand_batches)
+    dataset_object.get_sampler() #set the sampler
     dataset = dataset_object.get_dataset()
-    dataloader = dataset_object.get_dataloader(batch_size = train_hparams.batch_size, \
-                                               shuffle = train_hparams.rand_batches)
-    ordering = dataset_object.ordering
-
+    dataloader = dataset_object.get_dataloader(batch_size = train_hparams.batch_size)
+    
     model = model_registry.get_model(model_name = train_hparams.model).cuda()
     loss = model_registry.get_loss(loss_name = train_hparams.loss)
     optim = model_registry.get_optimizer(hparams = train_hparams, model = model)
@@ -42,14 +42,18 @@ def train_loop(train_hparams: TrainHParams):
         robustness_metric.start_epoch()
 
         if train_hparams.rand_batches:
-            dataloader = dataset_object.get_dataloader(batch_size = train_hparams.batch_size, shuffle = True)
+            dataset_object.get_sampler()
+            dataloader = dataset_object.get_dataloader(batch_size = train_hparams.batch_size)
+            
+        ordering = dataset_object.get_ordering()
 
-        for order, batch in zip(ordering, dataloader):
+        for batch in dataloader:
             x, y = batch
 
             x = x.cuda()
             outputs = model(x)
 
+            order = next(ordering)
             robustness_metric.pre_iteration(model_outputs = outputs.detach(),
                                             targets = y.detach(),
                                             ordering = order)
