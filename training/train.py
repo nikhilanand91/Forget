@@ -51,7 +51,7 @@ def train_loop(train_hparams: TrainHParams):
             outputs = model(x)
 
             robustness_metric.pre_iteration(model_outputs = outputs.detach(),
-                                            targets = y,
+                                            targets = y.detach(),
                                             ordering = order)
 
             J = loss(outputs, y.cuda())
