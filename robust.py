@@ -25,6 +25,7 @@ def main():
 		sys.exit(0)
 
 	runner = args.func(args)
+	runner.make_output_directory()
 	runner.run()
 
 if __name__ == '__main__':

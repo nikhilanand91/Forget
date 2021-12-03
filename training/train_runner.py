@@ -1,5 +1,6 @@
 import argparse
 from dataclasses import dataclass
+from pathlib import Path
 
 from base.runner import Runner
 from training.train_hparams import TrainHParams
@@ -44,8 +45,16 @@ class TrainRunner(Runner):
 
         return TrainRunner(train_hparams)
 
+    def make_output_directory(self) -> None:
+        if train_params.output_location == None or train_params.output_location == '':
+            raise ValueError(f'Set a valid output directory! Right now it is: {train_params.output_location}')
+            sys.exit(1)
+
+        parent_dir_path = Path(Path().absolute()).parent
+        Path(parent_dir_path + '/' + train_params.output_location).mkdir(parents = True, exist_ok = True)
+
     def display_output_location(self):
-        pass
+        print(f'Output directory: {train_params.output_location}')
 
     def run(self):
         #kick off training loop

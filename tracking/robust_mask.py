@@ -1,5 +1,5 @@
 from base.mask import Mask
-from datasets.datasets import Dataset
+from base.dataset import Dataset
 from typing import List
 
 class RobustMask(Mask):

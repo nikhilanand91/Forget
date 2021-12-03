@@ -12,9 +12,12 @@ def train_loop(train_hparams: TrainHParams):
     print_train_hparams(train_hparams)
     
     #Get dataset, model, loss, and optimizer.
-    dataset = dataset_registry.get_dataset(dataset_name = train_hparams.dataset, \
-                                           save_location = train_hparams.output_location)
-    dataloader = dataset.get_dataloader(batch_size = train_hparams.batch_size)
+    dataset_object = dataset_registry.get_dataset_object(dataset_name = train_hparams.dataset, \
+                                                         save_location = train_hparams.output_location)
+    dataset = dataset_object.get_dataset()
+    dataloader = dataset_object.get_dataloader(batch_size = train_hparams.batch_size, \
+                                               shuffle = train_hparams.rand_batches)
+    ordering = dataset_object.ordering
 
     model = model_registry.get_model(model_name = train_hparams.model).cuda()
     loss = model_registry.get_loss(loss_name = train_hparams.loss)
@@ -39,18 +42,13 @@ def train_loop(train_hparams: TrainHParams):
         robustness_metric.start_epoch()
 
         if train_hparams.rand_batches:
-            dataloader = dataset.get_dataloader(batch_size = train_hparams.batch_size, shuffle = True)
-
-        ordering = dataset.ordering if train_hparams.rand_batches \
-                   else iter(range(len(dataset)))
+            dataloader = dataset_object.get_dataloader(batch_size = train_hparams.batch_size, shuffle = True)
 
         for order, batch in zip(ordering, dataloader):
             x, y = batch
 
             x = x.cuda()
             outputs = model(x)
-
-            print(f'Order: {order}')
 
             robustness_metric.pre_iteration(model_outputs = outputs.detach(),
                                             targets = y,
@@ -68,6 +66,6 @@ def train_loop(train_hparams: TrainHParams):
         print(torch.tensor(batch_accuracy).mean())
 
         
-        metric.end_epoch()
+        robustness_metric.end_epoch()
 
-    metric.end_training()
+    robustness_metric.end_training()

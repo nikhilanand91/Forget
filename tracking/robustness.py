@@ -1,4 +1,3 @@
-
 from dataclasses import dataclass
 from collections.abc import Iterable
 from typing import List
@@ -7,7 +6,7 @@ import torch
 from base.metriclogger import MetricLogger
 from tracking.robust_mask import RobustMask
 from tracking.correct_mask import CorrectMask
-from utils import save_object
+from utils.save import save_object
 
 @dataclass
 class Robustness(MetricLogger):
@@ -28,14 +27,14 @@ class Robustness(MetricLogger):
         self.correct_examples = {}
         self.example_order = {}
 
-        self.correct_mask = CorrectMask(dataset_size = dataset_size)
+        self.correct_mask = CorrectMask(dataset_size = self.dataset_size)
 
         self._iteration = 0
         self._epoch = 0
         self.classification = None
 
     def description(self) -> str:
-    	return 'Metric to log robustness statistics.'
+        return 'Metric to log robustness statistics.'
 
     @property
     def epoch(self):
@@ -76,10 +75,10 @@ class Robustness(MetricLogger):
 
         self.classification = torch.zeros(len(model_outputs))
         for idx, output in enumerate(model_outputs):
-            if torch.argmax(output) == self._targets[idx]:
+            if torch.argmax(output) == targets[idx]:
                 self.classification[idx] = 1
-
-        self.correct_mask.set_mask_on(positions = self.classification, ordering = ordering)
+        
+        self.correct_mask.set_mask_on(classification = self.classification, ordering = ordering)
         self.correct_examples[self._epoch, self._iteration] = self.correct_mask.mask
 
 

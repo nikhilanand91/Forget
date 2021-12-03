@@ -28,6 +28,10 @@ class Runner(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def make_output_directory(self) -> None:
+        """Make the directory to store the results."""
+
+    @abc.abstractmethod
     def display_output_location(self) -> None:
         """Print the output location for the job."""
 

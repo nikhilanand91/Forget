@@ -1,5 +1,5 @@
 import abc
-from datasets.datasets import Dataset
+from base.dataset import Dataset
 from typing import List
 
 class Mask(abc.ABC):

@@ -133,10 +133,6 @@ def test(net):
 
 
 class CifarResnet:
-    """
-    We get the CifarResnet model from OpenLTH to save some time.
-    """
-
     def __init__(self):
         pass
 
