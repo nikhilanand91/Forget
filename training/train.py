@@ -15,8 +15,9 @@ def train_loop(train_hparams: TrainHParams):
     dataset_object = dataset_registry.get_dataset_object(dataset_name = train_hparams.dataset,
                                                          save_location = train_hparams.output_location,
                                                          shuffle = train_hparams.rand_batches)
-    dataset_object.get_sampler() #set the sampler
+    
     dataset = dataset_object.get_dataset()
+    dataset_object.get_sampler() #set the sampler
     dataloader = dataset_object.get_dataloader(batch_size = train_hparams.batch_size)
     
     model = model_registry.get_model(model_name = train_hparams.model).cuda()
@@ -45,7 +46,7 @@ def train_loop(train_hparams: TrainHParams):
             dataset_object.get_sampler()
             dataloader = dataset_object.get_dataloader(batch_size = train_hparams.batch_size)
             
-        ordering = dataset_object.get_ordering()
+        ordering = dataset_object.get_order(batch_size = train_hparams.batch_size)
 
         for batch in dataloader:
             x, y = batch

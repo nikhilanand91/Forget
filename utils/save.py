@@ -14,7 +14,7 @@ def save_object(object, output_location: str, object_name: str, epoch: int = -1,
                         
     print(f'Saving to {_append_str}.pkl')
 
-    file = open(_append_str, 'wb')
+    file = open(_append_str + '.pkl', 'wb')
     pickle.dump(object, file)
     file.close()
     print('Done!')

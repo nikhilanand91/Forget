@@ -40,14 +40,22 @@ class Cifar10(Dataset):
         self.transforms_to_apply = transform
 
     def get_sampler(self):
-        return RandomSampler() if self.shuffle else SequentialSampler(self.dataset)
-
-    def get_ordering(self):
-        if not self.sampler:
-            raise ValueError('No sampler found!')
+        if not self.dataset:
+            raise ValueError(f'Make sure to get the dataset first before setting a sampler.')
             sys.exit(1)
 
-        if shuffle:
+        if self.shuffle:
+            self.sampler = RandomSampler()
+        else:
+            self.sampler = SequentialSampler(self.dataset)
+        return self.sampler
+
+    def get_order(self, batch_size: int):
+        if not self.sampler:
+            raise ValueError('No sampler found! Make sure to set a sampler first before getting order of examples.')
+            sys.exit(1)
+
+        if self.shuffle:
             return self.sampler.shuffle()
         else:
             sequence = range(len(self.dataset))
