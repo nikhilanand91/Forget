@@ -16,6 +16,8 @@ class CorrectMask(Mask):
 		for classified_correctly, order in zip(classification, ordering):
 			if classified_correctly:
 				self.mask[order] = 1
+			else:
+				self.mask[order] = 0
 
 	def apply_mask(self, dataset: Dataset):
 		dataset_to_apply_on = dataset.get_dataset()

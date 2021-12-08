@@ -11,6 +11,11 @@ class MetricLogger(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def needs(self) -> dict:
+        """What objects this metric logger needs to make measurements."""
+        pass
+
+    @abc.abstractmethod
     def pre_training(self) -> None:
         """Functions to execute before training loop starts."""
 

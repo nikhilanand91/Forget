@@ -9,7 +9,7 @@ def train_loop(train_hparams: TrainHParams):
     """
     Main training loop code.
     """
-    print_train_hparams(train_hparams)
+    
     
     #Get dataset, model, loss, and optimizer.
     dataset_object = dataset_registry.get_dataset_object(dataset_name = train_hparams.dataset,
@@ -43,7 +43,7 @@ def train_loop(train_hparams: TrainHParams):
         robustness_metric.start_epoch()
 
         if train_hparams.rand_batches:
-            dataset_object.get_sampler()
+            dataset_object.get_sampler() #with randomized examples, we reset the sampler after each epoch
             dataloader = dataset_object.get_dataloader(batch_size = train_hparams.batch_size)
             
         ordering = dataset_object.get_order(batch_size = train_hparams.batch_size)
