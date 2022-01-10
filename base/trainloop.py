@@ -11,7 +11,8 @@ class TrainLoop(abc.ABC):
 	"""
 
 	@abc.abstractmethod
-	def description(self):
+	@staticmethod
+	def description():
 		"""A description of this trianing loop."""
 		pass
 

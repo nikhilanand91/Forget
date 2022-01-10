@@ -4,34 +4,22 @@ from typing import List
 import torch
 
 from base.metriclogger import MetricLogger
-from tracking.robust_mask import RobustMask
-from tracking.correct_mask import CorrectMask
-from utils.save import save_object
+from tracking.accuracy import Accuracy
+import tracking.robust_mask
+import utils.save
+
 
 @dataclass
 class Robustness(MetricLogger):
 
-    dataset_size: int = 0
-    batch_size: int = 0
-    learned_thres: int = 3 #learned threshold in epochs
-    granularity: str = 'by_ep'
     output_location: str = '/'
 
     def __post_init__(self):
 
-        if self.dataset_size == 0 or self.batch_size == 0:
-            raise ValueError('Invalid dataset size...')
-            sys.exit(0)
-
-        self.model_outputs = {}
-        self.correct_examples = {}
-        self.example_order = {}
-
-        self.correct_mask = CorrectMask(dataset_size = self.dataset_size)
+        self.correct_mask = {}
 
         self._iteration = 0
         self._epoch = 0
-        self.classification = None
 
     def description(self) -> str:
         return 'Metric to log robustness statistics.'
@@ -64,22 +52,21 @@ class Robustness(MetricLogger):
         """Functions to execute at the start of each epoch but before we load a batch."""
         pass
 
-    def pre_iteration(self, model_outputs: torch.Tensor, targets: torch.Tensor, ordering = None) -> None:
+    def pre_iteration(self) -> None:
         """Functions to execute during once batch is loaded but before optimizer step."""
-        if not ordering:
-            raise ValueError('Specify the order in which the examples appear in this base relative to original dataset!')
+        pass
+
+
+    def pre_iteration(self, accuracy_metric: Accuracy):
+        if not model or not dataloader:
+            raise ValueError('Need to specify model and dataloader to measure correctness.')
             sys.exit(1)
 
-        self.model_outputs[self._epoch, self._iteration] = model_outputs
-        self.example_order[self._epoch, self._iteration] = ordering
+        model.eval()
+        for batch in dataloader:
+            x, y = batch
 
-        self.classification = torch.zeros(len(model_outputs))
-        for idx, output in enumerate(model_outputs):
-            if torch.argmax(output) == targets[idx]:
-                self.classification[idx] = 1
-        
-        self.correct_mask.set_mask_on(classification = self.classification, ordering = ordering)
-        self.correct_examples[self._epoch, self._iteration] = self.correct_mask.mask
+
 
 
     def post_iteration(self) -> None:
@@ -92,10 +79,4 @@ class Robustness(MetricLogger):
 
     def end_training(self) -> None:
         #save the mask of correct examples and which examples they are to a file
-        save_object(object = self.correct_examples,
-                    output_location = self.output_location,
-                    object_name = 'CorrectExamples')
-
-        save_object(object = self.example_order,
-                    output_location = self.output_location,
-                    object_name = 'ExampleOrder')
+        
