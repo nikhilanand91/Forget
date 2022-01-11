@@ -5,7 +5,8 @@ import torch
 
 from base.metriclogger import MetricLogger
 from tracking.accuracy import Accuracy
-import tracking.robust_mask
+import tracking.difficulty_mask
+import tracking.correct_mask
 import utils.save
 
 
@@ -13,10 +14,12 @@ import utils.save
 class Robustness(MetricLogger):
 
     output_location: str = '/'
+    save_every: int = 10 #how often to save, in iterations
 
     def __post_init__(self):
 
         self.correct_mask = {}
+        self.difficulty_mask = {}
 
         self._iteration = 0
         self._epoch = 0
@@ -52,22 +55,11 @@ class Robustness(MetricLogger):
         """Functions to execute at the start of each epoch but before we load a batch."""
         pass
 
-    def pre_iteration(self) -> None:
+    def pre_iteration(self, accuracy_metric: Accuracy) -> None:
         """Functions to execute during once batch is loaded but before optimizer step."""
-        pass
-
-
-    def pre_iteration(self, accuracy_metric: Accuracy):
-        if not model or not dataloader:
-            raise ValueError('Need to specify model and dataloader to measure correctness.')
-            sys.exit(1)
-
-        model.eval()
-        for batch in dataloader:
-            x, y = batch
-
-
-
+        if self._iteration % self.save_every != 0:
+            return
+            
 
     def post_iteration(self) -> None:
         """Functions to execute during once batch is loaded and after optimizer step."""
