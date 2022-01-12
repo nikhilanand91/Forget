@@ -4,20 +4,21 @@ from typing import List
 import torch
 
 from base.metriclogger import MetricLogger
-import tracking.difficulty_mask
+import base.dataset
+import tracking.correctness_mask
 
 import utils.save
 
 @dataclass
 class Accuracy(MetricLogger):
 
-    output_location: str = '/'
+    dataset: base.dataset.Dataset
     dataset_size: int = 0
+    output_location: str = '/'
     save_every: int = 5 #how often to save, in iterations
-    min_difficulty_time: int = 10 #at least how many times example needs to have been classified correctly to be
-                                  #considered learned. Note that this is not in iterations, it just refers to
-                                  #the iterations mod save_every (how often we actually log this metric). If
-                                  #save_every = 1 then it would just mean iterations.
+    min_learned_time: int = 10 #at least how many times example needs to have been classified correctly recently to be
+                               #considered learned. Note that this is not in iterations, it just refers to
+                               #the iterations mod save_every (how often we actually log this metric).
 
     def __post_init__(self):
 
@@ -33,7 +34,8 @@ class Accuracy(MetricLogger):
         self._iteration = 0
         self._epoch = 0
 
-        self.difficulty_mask = {}
+        self.correctness_mask = {}
+        self.learned_mask = {}
 
     def description(self) -> str:
         return 'Metric to log train and test accuracy.'
@@ -72,7 +74,7 @@ class Accuracy(MetricLogger):
             sys.exit(1)
 
         if self._iteration % self.save_every != 0:
-            return
+            return _
 
         classification = torch.zeros(len(dataloader))
         class_idx = 0 #we need an index to track which example we're looking at in the full dataset
@@ -92,7 +94,8 @@ class Accuracy(MetricLogger):
 
         model.train()
 
-        self.create_difficulty_mask()
+        self.create_correctness_mask()
+        self.create_learned_mask()
 
     def post_iteration(self) -> None:
         """Functions to execute during once batch is loaded and after optimizer step."""
@@ -115,10 +118,17 @@ class Accuracy(MetricLogger):
                          output_location = self.output_location,
                          object_name = 'DatasetClassification')
 
-        utils.save.save_object(object = self.difficulty_mask,
+        utils.save.save_object(object = self.correctness_mask,
                          output_location = self.output_location,
                          object_name = 'DifficultyMask')
 
-    def create_difficulty_mask(self) -> None:
-        self.difficulty_mask[self._epoch, self._iteration] = tracking.difficulty_mask.DifficultyMask(dataset_size = self.dataset_size)
-        self.difficulty_mask[self._epoch, self._iteration].set_mask_on(classifications = self.classification[self._epoch, self._iteration])
+    def create_correctness_mask(self) -> None:
+        correctness_mask = tracking.correctness_mask.CorrectnessMask(dataset_size = self.dataset_size)
+        correctness_mask.set_mask_on(classifications = self.classification[self._epoch, self._iteration])
+        self.correctness_mask[self._epoch, self._iteration] = correctness_mask
+
+    def create_learned_mask(self) -> None:
+        """
+        Create a mask of learned examples. Learned examples at iteration t are those
+        that are classified correctly for all t' >= t.
+        """
