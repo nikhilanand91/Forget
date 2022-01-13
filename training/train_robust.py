@@ -30,7 +30,7 @@ class TrainRobust(TrainLoop):
 	    self.batch_accuracy = list()
 
 	    #define which metrics we're logging
-	   	self.accuracy_metric = tracking.accuracy.Accuracy(dataset_size = len(self.dataset),
+		self.accuracy_metric = tracking.accuracy.Accuracy(dataset_size = len(self.dataset),
 	   													  output_location = train_hparams.output_location)
 
 
