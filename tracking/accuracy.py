@@ -136,15 +136,19 @@ class Accuracy(MetricLogger):
 
     def create_learned_mask(self) -> None:
         """Create a dictionary of learned examples."""
-
         keys = self.correctness_mask.keys()
         for ex_idx in range(self.dataset_size):
             time_learned = float('inf')
-            for iteration in range(self._iteration - self.min_learned_time, -1, -1):
+            for iteration in range(self._iteration, -1, -1):
                 if iteration in keys and self.correctness_mask[iteration][ex_idx]:
                     time_learned = iteration
                 else:
-                    continue
-            self.learned_examples[ex_idx] = time_learned
+                    break
+
+            if self._iteration - time_learned >= self.min_learned_time:
+                self.learned_examples[ex_idx] = time_learned
+            else:
+                self.learned_examples[ex_idx] = float('inf')
+
 
 
