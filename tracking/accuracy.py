@@ -15,20 +15,20 @@ class Accuracy(MetricLogger):
     dataset_size: int = 0
     output_location: str = '/'
     save_every: int = 5 #how often to save, in iterations
-    min_learned_time: int = 10 #at least how many times example needs to have been classified correctly recently to be
+    min_learned_time: int = 100 #at least how many times example needs to have been classified correctly recently to be
                                #considered learned. Note that this is not in iterations, it just refers to
                                #the iterations mod save_every (how often we actually log this metric).
 
     def __post_init__(self):
 
-        if self.dataset_size <= 0 or self.batch_size <= 0:
+        if self.dataset_size <= 0:
             raise ValueError('Invalid dataset size...')
             sys.exit(0)
 
         self.train_accuracy = {}
         self.test_accuracy = {}
         self.model_outputs = {}
-        self.classification = torch.zeros(dataset_size)
+        self.classification = {}
 
         self._iteration = 0
         self._epoch = 0
@@ -38,6 +38,9 @@ class Accuracy(MetricLogger):
 
     def description(self) -> str:
         return 'Metric to log train and test accuracy.'
+
+    def needs(self) -> None:
+        print(f'Pre iteration functions need: model, dataloader.')
 
     @property
     def epoch(self):
@@ -73,10 +76,9 @@ class Accuracy(MetricLogger):
             sys.exit(1)
 
         if self._iteration % self.save_every != 0:
-            return _
+            return
 
         classification = torch.zeros(self.dataset_size)
-        class_idx = 0 #we need an index to track which example we're looking at in the full dataset
         model.eval()
         for batch_idx, batch in enumerate(dataloader):
             x, y = batch
@@ -84,11 +86,9 @@ class Accuracy(MetricLogger):
             self.model_outputs[self._iteration] = outputs.detach()
             self.train_accuracy[self._iteration] = y.eq(outputs.detach().argmax(dim=1).cpu()).float().mean()
 
-            for ex_idx, ex in enumerate(batch):
-                classification[batch_idx + class_idx] = (outputs[ex_idx].detach() == y[ex_idx].detach())
-                class_idx+=1
+            classification[batch_idx: batch_idx+len(outputs)] = y.eq(outputs.detach().argmax(dim=1).cpu())
                 
-            self.classification[self._iteration] = classification
+        self.classification[self._iteration] = classification
         
 
         model.train()
@@ -141,7 +141,8 @@ class Accuracy(MetricLogger):
         learned_idx = torch.ones(self.dataset_size)
         keys = self.correctness_mask.keys()
         for iteration in range(self._iteration - self.min_learned_time, -1, -1):
-            continue if iteration not in keys else _
+            if iteration not in keys:
+                continue
 
             for idx, correct in enumerate(self.correctness_mask[iteration].idx):
                 if not correct:

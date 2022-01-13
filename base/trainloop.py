@@ -10,8 +10,8 @@ class TrainLoop(abc.ABC):
 	become way too long/complicated.)
 	"""
 
-	@abc.abstractmethod
 	@staticmethod
+	@abc.abstractmethod
 	def description():
 		"""A description of this trianing loop."""
 		pass

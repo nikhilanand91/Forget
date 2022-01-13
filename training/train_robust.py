@@ -3,7 +3,6 @@ from base.trainloop import TrainLoop
 
 import base.model_registry
 import base.dataset_registry
-import tracking.robustness
 import tracking.accuracy
 
 import torch
@@ -19,10 +18,11 @@ class TrainRobust(TrainLoop):
 		self.dataset = self.dataset_object.get_dataset()
 		self.dataset_object.get_sampler() #set the sampler
 		self.dataloader = self.dataset_object.get_dataloader(batch_size = train_hparams.batch_size)
+		self.rand_batches = train_hparams.rand_batches
 		
 		self.model = base.model_registry.get_model(model_name = train_hparams.model).cuda()
 		self.loss = base.model_registry.get_loss(loss_name = train_hparams.loss)
-		self.optim = base.model_registry.get_optimizer(hparams = train_hparams, model = model)
+		self.optim = base.model_registry.get_optimizer(hparams = train_hparams, model = self.model)
 
 
 		self.num_ep = train_hparams.num_ep
@@ -48,7 +48,7 @@ class TrainRobust(TrainLoop):
 			
 			self.accuracy_metric.start_epoch()
 
-			if train_hparams.rand_batches:
+			if self.rand_batches:
 				sampler = dataset_object.get_sampler() #with randomized examples, we reset the sampler after each epoch
 				self.dataloader = dataset_object.get_dataloader(batch_size = self.batch_size)
 
@@ -71,8 +71,8 @@ class TrainRobust(TrainLoop):
 				
 				self.accuracy_metric.post_iteration()
 
-				batch_accuracy.append(y.eq(outputs.detach().argmax(dim=1).cpu()).float().mean())
-			print(torch.tensor(batch_accuracy).mean())
+				self.batch_accuracy.append(y.eq(outputs.detach().argmax(dim=1).cpu()).float().mean())
+			print(torch.tensor(self.batch_accuracy).mean())
 
 			
 			self.accuracy_metric.end_epoch()

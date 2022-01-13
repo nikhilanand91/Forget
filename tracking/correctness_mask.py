@@ -8,7 +8,7 @@ class CorrectnessMask(Mask):
 	def __init__(self, dataset_size):
 		self.dataset_size = dataset_size
 
-	def set_mask_on(classifications: torch.Tensor):
+	def set_mask_on(self, classifications: torch.Tensor):
 		self.idx = classifications
 
 	def apply_mask(dataset: base.dataset.Dataset):

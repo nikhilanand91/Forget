@@ -11,7 +11,7 @@ class MetricLogger(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def needs(self) -> dict:
+    def needs(self) -> None:
         """What objects this metric logger needs to make measurements."""
         pass
 
