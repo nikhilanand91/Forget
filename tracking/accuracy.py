@@ -122,16 +122,16 @@ class Accuracy(MetricLogger):
 
         utils.save.save_object(object = self.correctness_mask,
                          output_location = self.output_location,
-                         object_name = 'DifficultyMask')
+                         object_name = 'CorrectMask')
 
-        utils.save.save_object(object = self.learned_mask,
+        utils.save.save_object(object = self.learned_mask.idx,
                          output_location = self.output_location,
                          object_name = 'LearnedMask')
 
     def create_correctness_mask(self) -> None:
         correctness_mask = tracking.correctness_mask.CorrectnessMask(dataset_size = self.dataset_size)
         correctness_mask.set_mask_on(classifications = self.classification[self._iteration])
-        self.correctness_mask[self._iteration] = correctness_mask
+        self.correctness_mask[self._iteration] = correctness_mask.idx
 
     def create_learned_mask(self, min_learned_time: int) -> None:
         """
@@ -149,4 +149,5 @@ class Accuracy(MetricLogger):
                     learned_idx[idx] = 0
 
         self.learned_mask.set_mask_on(classifications = learned_idx)
+
 
