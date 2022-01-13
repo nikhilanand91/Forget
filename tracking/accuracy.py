@@ -142,6 +142,8 @@ class Accuracy(MetricLogger):
             for iteration in range(self._iteration, -1, -1):
                 if iteration in keys and self.correctness_mask[iteration][ex_idx]:
                     time_learned = iteration
+                elif iteration not in keys:
+                    continue
                 else:
                     break
 
