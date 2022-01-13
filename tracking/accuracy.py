@@ -14,7 +14,7 @@ class Accuracy(MetricLogger):
 
     dataset_size: int = 0
     output_location: str = '/'
-    save_every: int = 5 #how often to save, in iterations
+    save_every: int = 20 #how often to save, in iterations
     min_learned_time: int = 100 #at least how many times example needs to have been classified correctly recently to be
                                #considered learned. Note that this is not in iterations, it just refers to
                                #the iterations mod save_every (how often we actually log this metric).
@@ -144,7 +144,7 @@ class Accuracy(MetricLogger):
             if iteration not in keys:
                 continue
 
-            for idx, correct in enumerate(self.correctness_mask[iteration].idx):
+            for idx, correct in enumerate(self.correctness_mask[iteration]):
                 if not correct:
                     learned_idx[idx] = 0
 
