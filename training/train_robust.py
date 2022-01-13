@@ -34,7 +34,6 @@ class TrainRobust(TrainLoop):
 		self.accuracy_metric = tracking.accuracy.Accuracy(dataset_size = len(self.dataset),
 	   													  output_location = train_hparams.output_location)
 
-
 	@staticmethod
 	def description():
 		return 'A training loop to measure robustness and accuracy statistics.'
