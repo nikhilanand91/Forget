@@ -4,7 +4,7 @@ from pathlib import Path
 
 from base.runner import Runner
 from training.train_hparams import TrainHParams
-from training import train
+from training import train_robust
 
 @dataclass
 class TrainRunner(Runner):
@@ -58,4 +58,5 @@ class TrainRunner(Runner):
     def run(self):
         #kick off training loop
         for _ in range(self.replicates):
-            train.train_loop(train_hparams = self.train_params)
+            trainer = train_robust.TrainRobust(train_hparams = self.train_params)
+            trainer.loop()

@@ -12,7 +12,6 @@ import utils.save
 @dataclass
 class Accuracy(MetricLogger):
 
-    dataset: base.dataset.Dataset
     dataset_size: int = 0
     output_location: str = '/'
     save_every: int = 5 #how often to save, in iterations
@@ -35,7 +34,7 @@ class Accuracy(MetricLogger):
         self._epoch = 0
 
         self.correctness_mask = {}
-        self.learned_mask = {}
+        self.learned_mask = tracking.correctness_mask.CorrectnessMask(dataset_size = self.dataset_size)
 
     def description(self) -> str:
         return 'Metric to log train and test accuracy.'
@@ -76,26 +75,26 @@ class Accuracy(MetricLogger):
         if self._iteration % self.save_every != 0:
             return _
 
-        classification = torch.zeros(len(dataloader))
+        classification = torch.zeros(self.dataset_size)
         class_idx = 0 #we need an index to track which example we're looking at in the full dataset
         model.eval()
         for batch_idx, batch in enumerate(dataloader):
             x, y = batch
             outputs = model(x.cuda())
-            self.model_outputs[self._epoch, self._iteration] = outputs.detach()
-            self.train_accuracy[self._epoch, self._iteration] = y.eq(outputs.detach().argmax(dim=1).cpu()).float().mean()
+            self.model_outputs[self._iteration] = outputs.detach()
+            self.train_accuracy[self._iteration] = y.eq(outputs.detach().argmax(dim=1).cpu()).float().mean()
 
             for ex_idx, ex in enumerate(batch):
                 classification[batch_idx + class_idx] = (outputs[ex_idx].detach() == y[ex_idx].detach())
                 class_idx+=1
                 
-            self.classification[self._epoch, self._iteration] = classification
+            self.classification[self._iteration] = classification
         
 
         model.train()
 
         self.create_correctness_mask()
-        self.create_learned_mask()
+        
 
     def post_iteration(self) -> None:
         """Functions to execute during once batch is loaded and after optimizer step."""
@@ -106,6 +105,9 @@ class Accuracy(MetricLogger):
         self._epoch += 1
 
     def end_training(self) -> None:
+        """Functions to execute at the end of training."""
+        self.create_learned_mask(min_learned_time = self.min_learned_time)
+
         utils.save.save_object(object = self.train_accuracy,
                          output_location = self.output_location,
                          object_name = 'IterationAccuracy')
@@ -122,13 +124,28 @@ class Accuracy(MetricLogger):
                          output_location = self.output_location,
                          object_name = 'DifficultyMask')
 
+        utils.save.save_object(object = self.learned_mask,
+                         output_location = self.output_location,
+                         object_name = 'LearnedMask')
+
     def create_correctness_mask(self) -> None:
         correctness_mask = tracking.correctness_mask.CorrectnessMask(dataset_size = self.dataset_size)
-        correctness_mask.set_mask_on(classifications = self.classification[self._epoch, self._iteration])
-        self.correctness_mask[self._epoch, self._iteration] = correctness_mask
+        correctness_mask.set_mask_on(classifications = self.classification[self._iteration])
+        self.correctness_mask[self._iteration] = correctness_mask
 
-    def create_learned_mask(self) -> None:
+    def create_learned_mask(self, min_learned_time: int) -> None:
         """
         Create a mask of learned examples. Learned examples at iteration t are those
-        that are classified correctly for all t' >= t.
+        that are classified correctly for all t <= t_min.
         """
+        learned_idx = torch.ones(self.dataset_size)
+        keys = self.correctness_mask.keys()
+        for iteration in range(self._iteration - self.min_learned_time, -1, -1):
+            continue if iteration not in keys else _
+
+            for idx, correct in enumerate(self.correctness_mask[iteration].idx):
+                if not correct:
+                    learned_idx[idx] = 0
+
+        self.learned_mask.set_mask_on(classifications = learned_idx)
+

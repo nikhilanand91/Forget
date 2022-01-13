@@ -31,11 +31,8 @@ class TrainRobust(TrainLoop):
 	    self.batch_accuracy = list()
 
 	    #define which metrics we're logging
-	    self.robust_metric = tracking.robustness.Robustness(dataset_size = len(dataset),
-	                             batch_size = train_hparams.batch_size,
-	                             output_location = train_hparams.output_location)
-
-	   	self.accuracy_metric = tracking.accuracy.Accuracy(output_location = train_hparams.output_location)
+	   	self.accuracy_metric = tracking.accuracy.Accuracy(dataset_size = len(self.dataset),
+	   													  output_location = train_hparams.output_location)
 
 
 	@staticmethod
@@ -44,13 +41,12 @@ class TrainRobust(TrainLoop):
 
 
 	def loop(self):
-		self.robust_metric.pre_training()
 		self.accuracy_metric.pre_training()
 
 		self.model.train()
 	    for epoch in range(self.num_ep):
 	        
-	        self.robust_metric.start_epoch()
+	        self.accuracy_metric.start_epoch()
 
 	        if train_hparams.rand_batches:
 	            sampler = dataset_object.get_sampler() #with randomized examples, we reset the sampler after each epoch
@@ -62,8 +58,8 @@ class TrainRobust(TrainLoop):
 	            x = x.cuda()
 	            outputs = self.model(x)
 
-	            self.robust_metric.pre_iteration(model = self.model,
-	                                             dataloader = self.dataloader)
+	            self.accuracy_metric.pre_iteration(model = self.model,
+	                                               dataloader = self.dataloader)
 
 
 
@@ -73,12 +69,12 @@ class TrainRobust(TrainLoop):
 	            self.optim.step()
 
 	            
-	            self.robust_metric.post_iteration()
+	            self.accuracy_metric.post_iteration()
 
 	            batch_accuracy.append(y.eq(outputs.detach().argmax(dim=1).cpu()).float().mean())
 	        print(torch.tensor(batch_accuracy).mean())
 
 	        
-	        self.robust_metric.end_epoch()
+	        self.accuracy_metric.end_epoch()
 
-	    self.robust_metric.end_training()
+	    self.accuracy_metric.end_training()
