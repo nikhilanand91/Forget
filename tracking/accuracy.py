@@ -15,9 +15,9 @@ class Accuracy(MetricLogger):
     dataset_size: int = 0
     output_location: str = '/'
     save_every: int = 20 #how often to save, in iterations
-    min_learned_time: int = 100 #at least how many times example needs to have been classified correctly recently to be
-                               #considered learned. Note that this is not in iterations, it just refers to
-                               #the iterations mod save_every (how often we actually log this metric).
+    min_learned_time: int = 100 #Learned examples at iteration t are those
+                                #that are classified correctly for all t' >= t. Note that we require t to be
+                                #bounded by t <= maximum # of iterations trained - min_learned_time.
 
     def __post_init__(self):
 
@@ -34,7 +34,8 @@ class Accuracy(MetricLogger):
         self._epoch = 0
 
         self.correctness_mask = {}
-        self.learned_mask = tracking.correctness_mask.CorrectnessMask(dataset_size = self.dataset_size)
+        self.learned_examples = {}
+        #self.learned_mask = tracking.correctness_mask.CorrectnessMask(dataset_size = self.dataset_size)
 
     def description(self) -> str:
         return 'Metric to log train and test accuracy.'
@@ -106,7 +107,7 @@ class Accuracy(MetricLogger):
 
     def end_training(self) -> None:
         """Functions to execute at the end of training."""
-        self.create_learned_mask(min_learned_time = self.min_learned_time)
+        self.create_learned_mask()
 
         utils.save.save_object(object = self.train_accuracy,
                          output_location = self.output_location,
@@ -124,30 +125,25 @@ class Accuracy(MetricLogger):
                          output_location = self.output_location,
                          object_name = 'CorrectMask')
 
-        utils.save.save_object(object = self.learned_mask.idx,
+        utils.save.save_object(object = self.learned_examples,
                          output_location = self.output_location,
-                         object_name = 'LearnedMask')
+                         object_name = 'LearnedExamples')
 
     def create_correctness_mask(self) -> None:
         correctness_mask = tracking.correctness_mask.CorrectnessMask(dataset_size = self.dataset_size)
         correctness_mask.set_mask_on(classifications = self.classification[self._iteration])
         self.correctness_mask[self._iteration] = correctness_mask.idx
 
-    def create_learned_mask(self, min_learned_time: int) -> None:
-        """
-        Create a mask of learned examples. Learned examples at iteration t are those
-        that are classified correctly for all t <= t_min.
-        """
-        learned_idx = torch.ones(self.dataset_size)
-        keys = self.correctness_mask.keys()
-        for iteration in range(self._iteration - self.min_learned_time, -1, -1):
-            if iteration not in keys:
-                continue
+    def create_learned_mask(self) -> None:
+        """Create a dictionary of learned examples."""
 
-            for idx, correct in enumerate(self.correctness_mask[iteration]):
-                if not correct:
-                    learned_idx[idx] = 0
-
-        self.learned_mask.set_mask_on(classifications = learned_idx)
+        for ex_idx in range(self.dataset_size):
+            time_learned = float('inf')
+            for iteration in range(self._iteration - self.min_learned_time, -1, -1):
+                if self.correctness_mask[iteration][ex_idx]:
+                    time_learned = iteration
+                else:
+                    continue
+            self.learned_examples[ex_idx] = time_learned
 
 
