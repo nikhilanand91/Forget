@@ -11,10 +11,9 @@ import torch
 class TrainRobust(TrainLoop):
 
 	def __init__(self, train_hparams: TrainHParams):
-        self.dataset_object = base.dataset_registry.get_dataset_object(dataset_name = train_hparams.dataset,
+		self.dataset_object = base.dataset_registry.get_dataset_object(dataset_name = train_hparams.dataset,
                                                                        save_location = train_hparams.output_location,
                                                                        shuffle = train_hparams.rand_batches)
-    
 	    self.dataset = self.dataset_object.get_dataset() #get the actual dataset
 	    self.dataset_object.get_sampler() #set the sampler
 	    self.dataloader = self.dataset_object.get_dataloader(batch_size = train_hparams.batch_size)
