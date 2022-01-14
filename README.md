@@ -1,2 +1,2 @@
 # Forget
- Framework to do example difficulty robustness experiments (still in development).
+ Framework to do example difficulty and robustness experiments (still in development).
