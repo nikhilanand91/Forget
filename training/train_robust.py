@@ -4,6 +4,7 @@ from base.trainloop import TrainLoop
 import base.model_registry
 import base.dataset_registry
 import tracking.accuracy
+import tracking.model
 import utils.save
 
 import torch

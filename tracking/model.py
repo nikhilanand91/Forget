@@ -11,6 +11,10 @@ class Model(MetricLogger):
     chkpoint_step: int = 100 #how often to save the model, in iterations
     output_location: str = '/'
 
+    def __post_init__(self):
+        self._iteration = 0
+        self._epoch = 0
+
     def description(self) -> str:
         return 'Metric to log model states.'
 
