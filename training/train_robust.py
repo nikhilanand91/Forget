@@ -4,6 +4,7 @@ from base.trainloop import TrainLoop
 import base.model_registry
 import base.dataset_registry
 import tracking.accuracy
+import utils.save
 
 import torch
 
@@ -19,6 +20,7 @@ class TrainRobust(TrainLoop):
 		self.dataset_object.get_sampler() #set the sampler
 		self.dataloader = self.dataset_object.get_dataloader(batch_size = train_hparams.batch_size)
 		self.rand_batches = train_hparams.rand_batches
+		self.output_location = train_hparams.output_location
 		
 		self.model = base.model_registry.get_model(model_name = train_hparams.model).cuda()
 		self.loss = base.model_registry.get_loss(loss_name = train_hparams.loss)
@@ -34,6 +36,8 @@ class TrainRobust(TrainLoop):
 		# define which metrics we're logging
 		self.accuracy_metric = tracking.accuracy.Accuracy(dataset_size = len(self.dataset),
 														  output_location = train_hparams.output_location)
+		self.model_metric = tracking.model.Model(chkpoint_step = train_hparams.chkpoint_step,
+												 output_location = train_hparams.output_location)
 
 	@staticmethod
 	def description():
@@ -42,12 +46,14 @@ class TrainRobust(TrainLoop):
 
 	def loop(self):
 		self.accuracy_metric.pre_training()
+		self.model_metric.pre_training()
 
 		self.model.train()
 		for epoch in range(self.num_ep):
 			
 			self.accuracy_metric.start_epoch()
-
+			self.model_metric.start_epoch()
+			
 			if self.rand_batches:
 				sampler = dataset_object.get_sampler() #with randomized examples, we reset the sampler after each epoch
 				self.dataloader = dataset_object.get_dataloader(batch_size = self.batch_size)
@@ -60,7 +66,7 @@ class TrainRobust(TrainLoop):
 
 				self.accuracy_metric.pre_iteration(model = self.model,
 												   dataloader = self.dataloader)
-
+				self.model_metric.pre_iteration(model = self.model)
 
 
 				J = self.loss(outputs, y.cuda())
@@ -70,11 +76,14 @@ class TrainRobust(TrainLoop):
 
 				
 				self.accuracy_metric.post_iteration()
+				self.model_metric.post_iteration()
 
 				self.batch_accuracy.append(y.eq(outputs.detach().argmax(dim=1).cpu()).float().mean())
 			print(torch.tensor(self.batch_accuracy).mean())
 
 			
 			self.accuracy_metric.end_epoch()
+			self.model_metric.end_epoch()
 
 		self.accuracy_metric.end_training()
+		self.model_metric.end_training()
