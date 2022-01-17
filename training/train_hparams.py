@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from base.hparams import HParams
-from models.cifar_resnet import CifarResnet
 
 @dataclass
 class TrainHParams(HParams):

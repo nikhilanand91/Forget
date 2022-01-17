@@ -30,7 +30,7 @@ class TrainRunner(Runner):
                                     type = allowed_params[param], 
                                     help = param_desc[param])
             except KeyError as err:
-                print('Make sure hyperparameters and their descriptions match in hparams.py! Missing keys: \n')
+                print('Make sure hyperparameters and their descriptions match! Missing keys: \n')
                 print(err)
 
     @staticmethod

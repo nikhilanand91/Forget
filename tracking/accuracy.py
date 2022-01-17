@@ -128,7 +128,7 @@ class Accuracy(MetricLogger):
 
         utils.save.save_object(object = self.learned_examples,
                          output_location = self.output_location,
-                         object_name = 'LearnedExamples' + str(self.replicate))
+                         object_name = 'LearnedExamplesRep' + str(self.replicate))
 
     def create_correctness_mask(self) -> None:
         correctness_mask = tracking.correctness_mask.CorrectnessMask(dataset_size = self.dataset_size)

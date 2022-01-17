@@ -1,6 +1,7 @@
 import argparse
 import sys
 from training.train_runner import TrainRunner
+from noise.noise_runner import NoiseRunner
 
 def main():
 	"""
@@ -8,7 +9,7 @@ def main():
 	We also add the subarguments associated with each global argument. These
 	are then handled by the appropriate runner, which kicks off the job.
 	"""
-	global_args = {'train': TrainRunner}
+	global_args = {'train': TrainRunner, 'noise': NoiseRunner}
 	parser = argparse.ArgumentParser()
 	
 	subparsers = parser.add_subparsers()

@@ -35,10 +35,10 @@ class TrainRobust(TrainLoop):
 		self.batch_accuracy = list()
 
 		# define which metrics we're logging
-		self.accuracy_metric = tracking.accuracy.Accuracy(replicate = replicate
+		self.accuracy_metric = tracking.accuracy.Accuracy(replicate = replicate,
 														  dataset_size = len(self.dataset),
 														  output_location = train_hparams.output_location)
-		self.model_metric = tracking.model.Model(replicate = replicate
+		self.model_metric = tracking.model.Model(replicate = replicate,
 												 chkpoint_step = train_hparams.chkpoint_step,
 												 output_location = train_hparams.output_location)
 
