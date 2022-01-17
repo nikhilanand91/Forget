@@ -10,6 +10,7 @@ class Model(MetricLogger):
 
     chkpoint_step: int = 100 #how often to save the model, in iterations
     output_location: str = '/'
+    replicate: int #which replicate model
 
     def __post_init__(self):
         self._iteration = 0
@@ -53,7 +54,7 @@ class Model(MetricLogger):
         """Functions to execute in the pre-iteration step."""
         if self._iteration % self.chkpoint_step != 0:
             return
-        utils.save.save_model(output_location = self.output_location, model = model, iteration = self._iteration)
+        utils.save.save_model(output_location = self.output_location, model = model, iteration = self._iteration, replicate = self.replicate)
         
 
     def post_iteration(self) -> None:

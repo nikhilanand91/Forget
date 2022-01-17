@@ -14,6 +14,7 @@ class Accuracy(MetricLogger):
 
     dataset_size: int = 0
     output_location: str = '/'
+    replicate: int #which replicate model we are tracking
     save_every: int = 100 #how often to save, in iterations
     min_learned_time: int = 100 #Learned examples at iteration t are those
                                 #that are classified correctly for all t' >= t. Note that we require t to be
@@ -111,23 +112,23 @@ class Accuracy(MetricLogger):
 
         utils.save.save_object(object = self.train_accuracy,
                          output_location = self.output_location,
-                         object_name = 'IterationAccuracy')
+                         object_name = 'IterationAccuracyRep' + str(self.replicate))
 
         utils.save.save_object(object = self.model_outputs,
                          output_location = self.output_location,
-                         object_name = 'ModelOutputs')
+                         object_name = 'ModelOutputsRep' + str(self.replicate))
 
         utils.save.save_object(object = self.classification,
                          output_location = self.output_location,
-                         object_name = 'DatasetClassification')
+                         object_name = 'DatasetClassificationRep' + str(self.replicate))
 
         utils.save.save_object(object = self.correctness_mask,
                          output_location = self.output_location,
-                         object_name = 'CorrectMask')
+                         object_name = 'CorrectMaskRep' + str(self.replicate))
 
         utils.save.save_object(object = self.learned_examples,
                          output_location = self.output_location,
-                         object_name = 'LearnedExamples')
+                         object_name = 'LearnedExamples' + str(self.replicate))
 
     def create_correctness_mask(self) -> None:
         correctness_mask = tracking.correctness_mask.CorrectnessMask(dataset_size = self.dataset_size)

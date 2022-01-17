@@ -12,7 +12,7 @@ import torch
 
 class TrainRobust(TrainLoop):
 
-	def __init__(self, train_hparams: TrainHParams):
+	def __init__(self, train_hparams: TrainHParams, replicate: int):
 		self.dataset_object = base.dataset_registry.get_dataset_object(dataset_name=train_hparams.dataset,
 																	   save_location=train_hparams.output_location,
 																	   shuffle=train_hparams.rand_batches)
@@ -36,9 +36,14 @@ class TrainRobust(TrainLoop):
 
 		# define which metrics we're logging
 		self.accuracy_metric = tracking.accuracy.Accuracy(dataset_size = len(self.dataset),
-														  output_location = train_hparams.output_location)
+														  output_location = train_hparams.output_location,
+														  replicate = self.replicate)
 		self.model_metric = tracking.model.Model(chkpoint_step = train_hparams.chkpoint_step,
-												 output_location = train_hparams.output_location)
+												 output_location = train_hparams.output_location,
+												 replicate = self.replicate)
+
+		#which replicate we are training
+		self.replicate = replicate
 
 	@staticmethod
 	def description():

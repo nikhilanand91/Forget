@@ -20,7 +20,11 @@ def save_object(object, output_location: str, object_name: str, epoch: int = -1,
     file.close()
     print('Done!')
 
-def save_model(output_location: str, model: torch.nn.Module, iteration: int) -> None:
+def save_model(output_location: str, model: torch.nn.Module, iteration: int, replicate: int) -> None:
+    save_string = output_location + "replicate" + str(replicate) + "it" str(iteration) + ".pt"
+    if os.path.exists(save_string):
+        raise ValueError(f'Warning: the model you are trying to save already exists at {save_string}')
+
     torch.save({'iteration': iteration,
                'model_state_dict': model.state_dict(),
-               }, output_location + str(iteration) + "it.pt")
+               }, save_string)

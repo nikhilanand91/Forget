@@ -13,7 +13,7 @@ class TrainRunner(Runner):
     and pass the object TrainHParams.
     """
     train_params: TrainHParams
-    replicates: int = 1
+    replicates: int = 2
 
     @staticmethod
     def description():
@@ -57,6 +57,6 @@ class TrainRunner(Runner):
 
     def run(self):
         #kick off training loop
-        for _ in range(self.replicates):
-            trainer = train_robust.TrainRobust(train_hparams = self.train_params)
+        for replicate in range(self.replicates):
+            trainer = train_robust.TrainRobust(train_hparams = self.train_params, replicate = replicate)
             trainer.loop()
