@@ -8,9 +8,9 @@ import utils.save
 @dataclass
 class Model(MetricLogger):
 
+    replicate: int #which replicate model
     chkpoint_step: int = 100 #how often to save the model, in iterations
     output_location: str = '/'
-    replicate: int #which replicate model
 
     def __post_init__(self):
         self._iteration = 0

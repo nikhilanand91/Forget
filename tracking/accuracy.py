@@ -12,9 +12,9 @@ import utils.save
 @dataclass
 class Accuracy(MetricLogger):
 
+    replicate: int  #which replicate model we are tracking
     dataset_size: int = 0
     output_location: str = '/'
-    replicate: int #which replicate model we are tracking
     save_every: int = 100 #how often to save, in iterations
     min_learned_time: int = 100 #Learned examples at iteration t are those
                                 #that are classified correctly for all t' >= t. Note that we require t to be
