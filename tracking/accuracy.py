@@ -151,6 +151,3 @@ class Accuracy(MetricLogger):
                 self.learned_examples[ex_idx] = time_learned
             else:
                 self.learned_examples[ex_idx] = float('inf')
-
-
-

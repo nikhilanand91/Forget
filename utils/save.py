@@ -21,6 +21,6 @@ def save_object(object, output_location: str, object_name: str, epoch: int = -1,
     print('Done!')
 
 def save_model(output_location: str, model: torch.nn.Module, iteration: int) -> None:
-    torch.save({'epoch': epoch+1,
+    torch.save({'iteration': iteration,
                'model_state_dict': model.state_dict(),
                }, output_location + str(iteration) + "it.pt")
