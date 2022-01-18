@@ -8,6 +8,10 @@ class NoiseResnet20(NoiseLoop):
 	def __init__(self, noise_hparams: NoiseHParams):
 		pass
 
+	@staticmethod
+	def description():
+		return 'A class to add noise to ResNet20 models.'
+
 	def noise_fcn(self):
 		pass
 

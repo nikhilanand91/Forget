@@ -9,7 +9,7 @@ class NoiseHParams(HParams):
                       '--noise_min': int, '--noise_max': int, '--num_samples': int}
     param_desc = {'--model_directory': 'directory where trained models are located',
                   '--iteration': 'the iteration of model to add noise to',
-                  '--replicates:': 'which replicates to do noise experiments on (e.g, 4 means replicates 0, 1, ... , 4)',
+                  '--replicates': 'which replicates to do noise experiments on (e.g, 4 means replicates 0, 1, ... , 4)',
                   '--noise_min': 'minimum level of noise (default 0)',
                   '--noise_max': 'maximum level of noise (default 1)',
                   '--num_samples': 'number of noise samples (default 100)'}
